@@ -6,7 +6,3 @@ pytest-mypy
 pytest-black
 hypothesis
 tox
-sphinx
-sphinx-rtd-theme
-m2r
-sphinxcontrib.apidoc
