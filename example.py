@@ -1,6 +1,6 @@
 from telltale import model
 from telltale import thread
-from telltale import Evaluate
+from telltale import Evaluator
 
 
 @model
@@ -35,8 +35,10 @@ alice = Account("alice")
 bob = Account("bob")
 
 
-Evaluate(
+ev = Evaluator(
     models=[alice, bob],
     threads=[transfer(alice, bob, 3)],
     specs=[noOverdrafts([alice, bob])],
 )
+
+ev.evaluate()
