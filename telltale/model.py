@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import List
 
 
 def model(cls):
@@ -13,14 +13,21 @@ def model(cls):
 class Model:
     """Represents a stateful object"""
     def __init__(self, cls, *args, **kwargs):
-        self.instance = cls(*args, **kwargs)
+        self._instance = cls(*args, **kwargs)
 
-    def save_state(self) -> Dict:
-        return self.instance.__dict__
+    def save_state(self) -> List:
+        out = list(self._instance.__dict__.items())
+        return out
 
     def restore_state(self, state) -> None:
         for k, v in state:
-            self.instance.__dict__[k] = v
+            self._instance.__dict__[k] = v
 
     def __getattr__(self, key):
-        return getattr(self.instance, key)
+        return getattr(self._instance, key)
+
+    def __setattr__(self, key, val):
+        if key == "_instance":
+            self.__dict__["_instance"] = val
+            return
+        return setattr(self._instance, key, val)
