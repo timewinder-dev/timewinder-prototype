@@ -18,6 +18,9 @@ setuptools.setup(
         "Development Status :: 1 - Planning",
         "Programming Language :: Python :: 3",
     ],
-    install_requires=[],
+    install_requires=[
+        "dataclasses",
+        "varname",
+    ],
     python_requires=">=3.6",
 )

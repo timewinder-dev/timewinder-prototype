@@ -6,3 +6,5 @@ pytest-mypy
 pytest-black
 hypothesis
 tox
+dataclasses
+varname

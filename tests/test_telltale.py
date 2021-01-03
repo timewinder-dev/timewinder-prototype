@@ -1,17 +1,20 @@
-import telltale  # noqa: F401
+import telltale
+import pytest
 from telltale.evaluation import state_hash
+
+from tests.test_helpers import A
 
 
 def test_savestate():
     @telltale.model
-    class A:
+    class DoIt:
         def __init__(self):
             self.foo = "b"
 
         def doit(self):
             self.foo = "bar"
 
-    a = A()
+    a = DoIt()
     s = a.save_state()
     a.doit()
     assert a.foo == "bar"
@@ -22,20 +25,12 @@ def test_savestate():
 
 
 def test_simple_eval():
-    @telltale.model
-    class A:
-        def __init__(self):
-            self.foo = "b"
-
-        def __repr__(self):
-            return "A: " + self.foo
-
     @telltale.thread
     def t(m):
-        if m.foo == "b":
-            m.foo = "a"
+        if m.foo == "a":
+            m.foo = "b"
             return
-        m.foo = "b"
+        m.foo = "a"
 
     a = A()
 
@@ -45,3 +40,67 @@ def test_simple_eval():
     )
 
     ev.evaluate(steps=4)
+
+
+def test_multi_eval():
+    @telltale.thread
+    def t(m):
+        m.foo = "b"
+        x(m)
+
+    @telltale.thread
+    def x(m):
+        assert m.foo == "b"
+        m.foo = "a"
+
+    a = A()
+
+    ev = telltale.Evaluator(
+        models=[a],
+        threads=[t(a)],
+    )
+
+    ev.evaluate(steps=4)
+    assert ev.stats.states == 2
+
+
+def test_subcall_onestate():
+    @telltale.thread
+    def t(m):
+        m.foo = "b"
+        x(m)
+
+    # Intentionally not a thread -- so t calls it in one step
+    def x(m):
+        assert m.foo == "b"
+        m.foo = "a"
+
+    a = A()
+
+    ev = telltale.Evaluator(
+        models=[a],
+        threads=[t(a)],
+    )
+
+    ev.evaluate(steps=4)
+    assert ev.stats.states == 1
+
+
+def test_assert_fail():
+    @telltale.thread
+    def t(m):
+        m.foo = "b"
+
+    @telltale.thread
+    def x(m):
+        assert m.foo == "b"
+
+    a = A()
+
+    ev = telltale.Evaluator(
+        models=[a],
+        threads=[t(a), x(a)],
+    )
+
+    with pytest.raises(AssertionError):
+        ev.evaluate(steps=4)

@@ -1,6 +1,5 @@
 def thread(function):
-    """Decorator representing an atomic operation between states.
-    """
+    """Decorator representing an atomic operation between states."""
     return Thread(function)
 
 

@@ -2,17 +2,20 @@ from typing import List
 
 
 def model(cls):
-    """Decorator wrapping a class representing model state.
-    """
+    """Decorator wrapping a class representing model state."""
+
     def wrapper(*args, **kwargs):
         return Model(cls, *args, **kwargs)
 
+    wrapper._cls = cls
     return wrapper
 
 
 class Model:
     """Represents a stateful object"""
+
     def __init__(self, cls, *args, **kwargs):
+        self._cls = cls
         self._instance = cls(*args, **kwargs)
 
     def save_state(self) -> List:
@@ -27,7 +30,7 @@ class Model:
         return getattr(self._instance, key)
 
     def __setattr__(self, key, val):
-        if key == "_instance":
-            self.__dict__["_instance"] = val
+        if key in ["_instance", "_cls"]:
+            self.__dict__[key] = val
             return
         return setattr(self._instance, key, val)

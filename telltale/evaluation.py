@@ -1,9 +1,19 @@
 from typing import Dict
 from typing import DefaultDict
 from typing import List
+from typing import Tuple
+
+from dataclasses import dataclass
 
 from collections import defaultdict
 from .thread import _set_execution
+
+
+@dataclass
+class EvaluatorStats:
+    thread_runs: int = 0
+    states: int = 0
+    steps: int = 0
 
 
 class Evaluator:
@@ -12,7 +22,8 @@ class Evaluator:
         self.threads = threads
         self.specs = specs
         self.state_space: Dict[int, List] = {}
-        self.evaluated: DefaultDict[int, bool] = defaultdict(bool)
+        self.evaluated: DefaultDict[Tuple[int, int], bool] = defaultdict(bool)
+        self.stats: EvaluatorStats = EvaluatorStats()
 
     def _restore_state(self, state_vector):
         for model, state in zip(self.models, state_vector):
@@ -23,32 +34,46 @@ class Evaluator:
 
     def _add_state(self, state_vector) -> int:
         state_id = state_hash([state_hash(x) for x in state_vector])
+        if state_id in self.state_space:
+            return state_id
+        self.stats.states += 1
         self.state_space[state_id] = state_vector
         return state_id
 
-    def evaluate(self, steps=5):
+    def evaluate(self, steps: int = 5):
+        self.stats = EvaluatorStats()
         initial_state = self._save_state()
         initial_id = self._add_state(initial_state)
-        next_queue = [initial_id]
+        next_queue = [(initial_id, i) for i in range(len(self.threads))]
+        _set_execution(True)
         for step in range(1, steps + 1):
             state_queue = next_queue
             next_queue = []
             if len(state_queue) == 0:
-                print(f"No more unique states to evaluate")
+                print("No more states to evaluate")
                 break
             print(f"Evaluating Step {step}...")
-            for state_id in state_queue:
-                self.evaluated[state_id] = True
-                for thread in self.threads:
-                    self._restore_state(self.state_space[state_id])
-                    _set_execution(True)
-                    for ret in thread._eval():
-                        state = self._save_state()
-                        gen_id = self._add_state(state)
-                        if not self.evaluated[gen_id]:
-                            next_queue.append(gen_id)
-                    _set_execution(False)
-        self._print_state_space()
+            self.stats.steps += 1
+            for state_id, thread_id in state_queue:
+                new_runs = self.run_thread(state_id, thread_id)
+                next_queue.extend(new_runs)
+        _set_execution(False)
+
+    def run_thread(self, state_id: int, thread_id: int):
+        to_run = []
+        self.stats.thread_runs += 1
+        self.evaluated[(state_id, thread_id)] = True
+        thread = self.threads[thread_id]
+        self._restore_state(self.state_space[state_id])
+        for _ in thread._eval():
+            state = self._save_state()
+            gen_id = self._add_state(state)
+            for i in range(len(self.threads)):
+                if i == thread_id:
+                    continue
+                if not self.evaluated[(gen_id, i)]:
+                    to_run.append((gen_id, i))
+        return to_run
 
     def _print_state_space(self):
         for n, states in self.state_space.items():

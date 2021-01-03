@@ -26,9 +26,11 @@ def deposit(acc_to, amount):
     acc_to.money += amount
 
 
-def noOverdrafts(models):
+def noOverdrafts(models) -> bool:
     for m in models:
-        assert m.money >= 0
+        if m.money < 0:
+            return False
+    return True
 
 
 alice = Account("alice")
