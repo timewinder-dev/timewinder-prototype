@@ -25,7 +25,7 @@ def test_savestate():
 
 
 def test_simple_eval():
-    @telltale.thread
+    @telltale.step
     def t(m):
         if m.foo == "a":
             m.foo = "b"
@@ -43,12 +43,11 @@ def test_simple_eval():
 
 
 def test_multi_eval():
-    @telltale.thread
+    @telltale.step
     def t(m):
         m.foo = "b"
-        x(m)
 
-    @telltale.thread
+    @telltale.step
     def x(m):
         assert m.foo == "b"
         m.foo = "a"
@@ -57,7 +56,7 @@ def test_multi_eval():
 
     ev = telltale.Evaluator(
         models=[a],
-        threads=[t(a)],
+        threads=[telltale.Algorithm(t(a), x(a))],
     )
 
     ev.evaluate(steps=4)
@@ -65,7 +64,7 @@ def test_multi_eval():
 
 
 def test_subcall_onestate():
-    @telltale.thread
+    @telltale.step
     def t(m):
         m.foo = "b"
         x(m)
@@ -87,11 +86,11 @@ def test_subcall_onestate():
 
 
 def test_assert_fail():
-    @telltale.thread
+    @telltale.step
     def t(m):
         m.foo = "b"
 
-    @telltale.thread
+    @telltale.step
     def x(m):
         assert m.foo == "b"
 

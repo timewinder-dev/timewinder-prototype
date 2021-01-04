@@ -3,5 +3,6 @@ __version__ = "0.1dev0"
 
 from .model import model
 from .evaluation import Evaluator
-from .thread import thread
+from .thread import step
+from .thread import Algorithm
 from .constraints import ForAll

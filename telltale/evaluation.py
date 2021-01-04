@@ -6,20 +6,40 @@ from typing import Tuple
 from dataclasses import dataclass
 
 from collections import defaultdict
-from .thread import _set_execution
+from .thread import Algorithm
+from .thread import Step
 
 
 @dataclass
 class EvaluatorStats:
-    thread_runs: int = 0
+    thunk_runs: int = 0
     states: int = 0
     steps: int = 0
+
+
+@dataclass
+class EvalThunk:
+    thread_id: int
+    current_threads: List[int]
+    state_id: int
+
+
+def _prepare_threads(threads) -> List[Algorithm]:
+    out = []
+    for t in threads:
+        if isinstance(t, Algorithm):
+            out.append(t)
+        elif isinstance(t, Step):
+            out.append(Algorithm(t))
+        else:
+            raise TypeError("Threads need to be prepared")
+    return out
 
 
 class Evaluator:
     def __init__(self, *, models=None, threads=None, specs=None):
         self.models = models
-        self.threads = threads
+        self.threads = _prepare_threads(threads)
         self.specs = specs
         self.state_space: Dict[int, List] = {}
         self.evaluated: DefaultDict[Tuple[int, int], bool] = defaultdict(bool)
@@ -44,8 +64,11 @@ class Evaluator:
         self.stats = EvaluatorStats()
         initial_state = self._save_state()
         initial_id = self._add_state(initial_state)
-        next_queue = [(initial_id, i) for i in range(len(self.threads))]
-        _set_execution(True)
+        thread_state = [0] * len(self.threads)
+        next_queue = [
+            EvalThunk(i, thread_state[:], initial_id) for i in range(len(self.threads))
+        ]
+
         for step in range(1, steps + 1):
             state_queue = next_queue
             next_queue = []
@@ -54,25 +77,38 @@ class Evaluator:
                 break
             print(f"Evaluating Step {step}...")
             self.stats.steps += 1
-            for state_id, thread_id in state_queue:
-                new_runs = self.run_thread(state_id, thread_id)
+            for thunk in state_queue:
+                new_runs = self.run_thunk(thunk)
                 next_queue.extend(new_runs)
-        _set_execution(False)
 
-    def run_thread(self, state_id: int, thread_id: int):
+    def run_thunk(self, t: EvalThunk):
+        self.stats.thunk_runs += 1
+        self.evaluated[(t.state_id, t.thread_id)] = True
+        algo = self.threads[t.thread_id]
+        self._restore_state(self.state_space[t.state_id])
+
+        current_step: int = t.current_threads[t.thread_id]
+        algo.execute_step(current_step)
+        state = self._save_state()
+        gen_id = self._add_state(state)
+        next_states = algo.get_next_states(current_step)
+
         to_run = []
-        self.stats.thread_runs += 1
-        self.evaluated[(state_id, thread_id)] = True
-        thread = self.threads[thread_id]
-        self._restore_state(self.state_space[state_id])
-        for _ in thread._eval():
-            state = self._save_state()
-            gen_id = self._add_state(state)
+        for s in next_states:
+            new_threads = t.current_threads[:]
+            new_threads[t.thread_id] = s
             for i in range(len(self.threads)):
-                if i == thread_id:
+                if new_threads[i] == -1:
                     continue
-                if not self.evaluated[(gen_id, i)]:
-                    to_run.append((gen_id, i))
+                if self.evaluated[(gen_id, i)]:
+                    continue
+                to_run.append(
+                    EvalThunk(
+                        thread_id=i,
+                        current_threads=new_threads,
+                        state_id=gen_id,
+                    )
+                )
         return to_run
 
     def _print_state_space(self):
