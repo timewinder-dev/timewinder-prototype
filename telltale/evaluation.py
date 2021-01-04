@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from collections import defaultdict
 from .thread import Algorithm
 from .thread import Step
+from .constraints import ConstraintError
 
 
 @dataclass
@@ -19,9 +20,12 @@ class EvaluatorStats:
 
 @dataclass
 class EvalThunk:
-    thread_id: int
+    trace: List[int]
     current_threads: List[int]
     state_id: int
+
+    def thread_id(self) -> int:
+        return self.trace[len(self.trace) - 1]
 
 
 def _prepare_threads(threads) -> List[Algorithm]:
@@ -66,7 +70,7 @@ class Evaluator:
         initial_id = self._add_state(initial_state)
         thread_state = [0] * len(self.threads)
         next_queue = [
-            EvalThunk(i, thread_state[:], initial_id) for i in range(len(self.threads))
+            EvalThunk([i], thread_state[:], initial_id) for i in range(len(self.threads))
         ]
 
         for step in range(1, steps + 1):
@@ -81,30 +85,46 @@ class Evaluator:
                 new_runs = self.run_thunk(thunk)
                 next_queue.extend(new_runs)
 
+    def check_constraints(self, t: EvalThunk):
+        for spec in self.specs:
+            error = spec(self.models)
+            if error is not None:
+                error.trace = t.trace
+                raise error
+
     def run_thunk(self, t: EvalThunk):
         self.stats.thunk_runs += 1
-        self.evaluated[(t.state_id, t.thread_id)] = True
-        algo = self.threads[t.thread_id]
+        self.evaluated[(t.state_id, t.thread_id())] = True
+        algo = self.threads[t.thread_id()]
         self._restore_state(self.state_space[t.state_id])
 
-        current_step: int = t.current_threads[t.thread_id]
+        current_step: int = t.current_threads[t.thread_id()]
         algo.execute_step(current_step)
         state = self._save_state()
         gen_id = self._add_state(state)
+        try:
+            self.check_constraints(t)
+        except ConstraintError as e:
+            raise e
         next_states = algo.get_next_states(current_step)
 
+        return self._generate_next(gen_id, next_states, t)
+
+    def _generate_next(self, gen_id: int, next_states: List[int], t: EvalThunk):
         to_run = []
         for s in next_states:
             new_threads = t.current_threads[:]
-            new_threads[t.thread_id] = s
+            new_threads[t.thread_id()] = s
             for i in range(len(self.threads)):
                 if new_threads[i] == -1:
                     continue
                 if self.evaluated[(gen_id, i)]:
                     continue
+                new_trace = t.trace[:]
+                new_trace.append(i)
                 to_run.append(
                     EvalThunk(
-                        thread_id=i,
+                        trace=new_trace,
                         current_threads=new_threads,
                         state_id=gen_id,
                     )
