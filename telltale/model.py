@@ -1,4 +1,5 @@
 from typing import List
+from typing import Tuple
 
 
 def model(cls):
@@ -18,11 +19,14 @@ class Model:
         self._cls = cls
         self._instance = cls(*args, **kwargs)
 
-    def save_state(self) -> List:
-        out = list(self._instance.__dict__.items())
+    def save_state(self) -> List[Tuple]:
+        out = sorted(list(self._instance.__dict__.items()))
         return out
 
-    def restore_state(self, state) -> None:
+    def state_dict(self):
+        return self._instance.__dict__
+
+    def restore_state(self, state: List[Tuple]) -> None:
         for k, v in state:
             self._instance.__dict__[k] = v
 

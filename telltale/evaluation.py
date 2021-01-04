@@ -9,6 +9,8 @@ from collections import defaultdict
 from .thread import Algorithm
 from .thread import Step
 from .constraints import ConstraintError
+from .expanders import BaseExpander
+from .expanders import expand_states
 
 
 @dataclass
@@ -42,9 +44,9 @@ def _prepare_threads(threads) -> List[Algorithm]:
 
 class Evaluator:
     def __init__(self, *, models=None, threads=None, specs=None):
-        self.models = models
+        self.models = [] if models is None else models
         self.threads = _prepare_threads(threads)
-        self.specs = specs
+        self.specs = [] if specs is None else specs
         self.state_space: Dict[int, List] = {}
         self.evaluated: DefaultDict[Tuple[int, int], bool] = defaultdict(bool)
         self.stats: EvaluatorStats = EvaluatorStats()
@@ -66,12 +68,15 @@ class Evaluator:
 
     def evaluate(self, steps: int = 5):
         self.stats = EvaluatorStats()
-        initial_state = self._save_state()
-        initial_id = self._add_state(initial_state)
+        initial_states = expand_states(self.models)
+        initial_ids = (self._add_state(state) for state in initial_states)
         thread_state = [0] * len(self.threads)
-        next_queue = [
-            EvalThunk([i], thread_state[:], initial_id) for i in range(len(self.threads))
-        ]
+        next_queue = []
+        for init_id in initial_ids:
+            next_queue.extend([
+                EvalThunk([i], thread_state[:], init_id)
+                for i in range(len(self.threads))
+            ])
 
         for step in range(1, steps + 1):
             state_queue = next_queue
