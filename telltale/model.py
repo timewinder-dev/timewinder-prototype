@@ -38,3 +38,6 @@ class Model:
             self.__dict__[key] = val
             return
         return setattr(self._instance, key, val)
+
+    def __repr__(self):
+        return "%s" % (self.save_state())

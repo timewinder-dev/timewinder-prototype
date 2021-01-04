@@ -9,7 +9,6 @@ from collections import defaultdict
 from .thread import Algorithm
 from .thread import Step
 from .constraints import ConstraintError
-from .expanders import BaseExpander
 from .expanders import expand_states
 
 
@@ -73,10 +72,12 @@ class Evaluator:
         thread_state = [0] * len(self.threads)
         next_queue = []
         for init_id in initial_ids:
-            next_queue.extend([
-                EvalThunk([i], thread_state[:], init_id)
-                for i in range(len(self.threads))
-            ])
+            next_queue.extend(
+                [
+                    EvalThunk([i], thread_state[:], init_id)
+                    for i in range(len(self.threads))
+                ]
+            )
 
         for step in range(1, steps + 1):
             state_queue = next_queue
@@ -95,6 +96,7 @@ class Evaluator:
             error = spec(self.models)
             if error is not None:
                 error.trace = t.trace
+                error.state = "\n".join([m.__repr__() for m in self.models])
                 raise error
 
     def run_thunk(self, t: EvalThunk):

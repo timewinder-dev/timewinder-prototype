@@ -27,3 +27,4 @@ class ConstraintError(BaseException):
     def __init__(self, name, trace=None):
         self.name = name
         self.trace = trace
+        self.state = None

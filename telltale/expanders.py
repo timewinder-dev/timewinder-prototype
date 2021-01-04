@@ -41,5 +41,7 @@ def expand_model_states(m: Model):
     expand_queue: Iterable[Dict] = [init]
     for k, v in init.items():
         if isinstance(v, BaseExpander):
-            expand_queue = itertools.chain.from_iterable([v.make_states(s, k) for s in expand_queue])
+            expand_queue = itertools.chain.from_iterable(
+                [v.make_states(s, k) for s in expand_queue]
+            )
     return expand_queue
