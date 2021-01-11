@@ -1,7 +1,9 @@
+from abc import ABC
+from abc import abstractmethod
+from varname import varname
+
 from typing import List
 from typing import Tuple
-
-from varname import varname
 
 
 def model(cls):
@@ -15,7 +17,17 @@ def model(cls):
     return wrapper
 
 
-class Model:
+class BaseModel(ABC):
+    @abstractmethod
+    def save_state(self) -> List[Tuple]:
+        pass
+
+    @abstractmethod
+    def restore_state(self, state: List[Tuple]) -> None:
+        pass
+
+
+class Model(BaseModel):
     """Represents a stateful object"""
 
     def __init__(self, cls, name, args, kwargs):
