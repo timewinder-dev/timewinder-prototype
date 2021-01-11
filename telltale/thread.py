@@ -2,6 +2,11 @@ from inspect import isfunction
 
 from typing import List
 
+PCStack = List[int]
+
+InitialStack: PCStack = [0]
+FinishedStack: PCStack = []
+
 
 def step(function):
     """Decorator representing an atomic operation between states."""
@@ -15,13 +20,13 @@ class Algorithm:
     def __init__(self, *args):
         self.steps = args
 
-    def execute_step(self, i: int):
+    def execute_step(self, stack: PCStack) -> List[PCStack]:
+        i = stack[0]
         self.steps[i]._eval()
-
-    def get_next_states(self, i: int) -> List[int]:
-        if i == len(self.steps) - 1:
-            return [-1]
-        return [i + 1]
+        n = i + 1
+        if n >= len(self.steps):
+            return [FinishedStack]
+        return [[n]]
 
 
 class Step:

@@ -1,12 +1,15 @@
 from typing import List
 from typing import Tuple
 
+from varname import varname
+
 
 def model(cls):
     """Decorator wrapping a class representing model state."""
 
     def wrapper(*args, **kwargs):
-        return Model(cls, *args, **kwargs)
+        name = varname()
+        return Model(cls, name, args, kwargs)
 
     wrapper._cls = cls
     return wrapper
@@ -15,8 +18,9 @@ def model(cls):
 class Model:
     """Represents a stateful object"""
 
-    def __init__(self, cls, *args, **kwargs):
+    def __init__(self, cls, name, args, kwargs):
         self._cls = cls
+        self._name = name
         self._instance = cls(*args, **kwargs)
 
     def save_state(self) -> List[Tuple]:
@@ -34,7 +38,7 @@ class Model:
         return getattr(self._instance, key)
 
     def __setattr__(self, key, val):
-        if key in ["_instance", "_cls"]:
+        if key in ["_instance", "_cls", "_name"]:
             self.__dict__[key] = val
             return
         return setattr(self._instance, key, val)

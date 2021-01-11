@@ -10,7 +10,7 @@ class ForAll:
     def __init__(self, model: Optional[Model], pred: Callable[[Model], bool]):
         self.modeltype = model
         self.pred = pred
-        self.varname = varname()
+        self.name = varname()
 
     def __call__(self, model_states):
         for m in model_states:
@@ -19,7 +19,7 @@ class ForAll:
                     continue
             ok = self.pred(m)
             if not ok:
-                return ConstraintError(self.varname)
+                return ConstraintError(self.name)
         return None
 
 

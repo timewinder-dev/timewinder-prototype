@@ -8,6 +8,8 @@ from dataclasses import dataclass
 from collections import defaultdict
 from .thread import Algorithm
 from .thread import Step
+from .thread import PCStack
+from .thread import InitialStack
 from .constraints import ConstraintError
 from .expanders import expand_states
 
@@ -22,7 +24,7 @@ class EvaluatorStats:
 @dataclass
 class EvalThunk:
     trace: List[int]
-    current_threads: List[int]
+    current_threads: List[PCStack]
     state_id: int
 
     def thread_id(self) -> int:
@@ -69,7 +71,7 @@ class Evaluator:
         self.stats = EvaluatorStats()
         initial_states = expand_states(self.models)
         initial_ids = (self._add_state(state) for state in initial_states)
-        thread_state = [0] * len(self.threads)
+        thread_state = [InitialStack] * len(self.threads)
         next_queue = []
         for init_id in initial_ids:
             next_queue.extend(
@@ -105,25 +107,24 @@ class Evaluator:
         algo = self.threads[t.thread_id()]
         self._restore_state(self.state_space[t.state_id])
 
-        current_step: int = t.current_threads[t.thread_id()]
-        algo.execute_step(current_step)
+        current_stack: PCStack = t.current_threads[t.thread_id()]
+        next_states = algo.execute_step(current_stack)
         state = self._save_state()
         gen_id = self._add_state(state)
         try:
             self.check_constraints(t)
         except ConstraintError as e:
             raise e
-        next_states = algo.get_next_states(current_step)
 
         return self._generate_next(gen_id, next_states, t)
 
-    def _generate_next(self, gen_id: int, next_states: List[int], t: EvalThunk):
+    def _generate_next(self, gen_id: int, next_states: List[PCStack], t: EvalThunk):
         to_run = []
         for s in next_states:
             new_threads = t.current_threads[:]
             new_threads[t.thread_id()] = s
             for i in range(len(self.threads)):
-                if new_threads[i] == -1:
+                if new_threads[i] == []:
                     continue
                 if self.evaluated[(gen_id, i)]:
                     continue

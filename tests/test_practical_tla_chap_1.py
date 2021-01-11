@@ -35,6 +35,7 @@ def test_overdraft_1():
         specs=[no_overdrafts],
     )
     ev.evaluate()
+    ev._print_state_space()
     assert ev.stats.states == 3
 
 
