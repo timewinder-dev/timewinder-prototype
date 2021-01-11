@@ -8,6 +8,8 @@ def Call(x):
 def f(acc):
     acc["foo"] = 2
     # comment
+    x = 2
+    y = set()
     with x in y as foo:
         Call(foo)
     ll = [f for f in y]
