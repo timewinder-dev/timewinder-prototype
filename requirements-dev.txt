@@ -4,6 +4,7 @@ pytest-cov
 pytest-flake8
 pytest-mypy
 pytest-black
+pytest-benchmark
 hypothesis
 tox
 dataclasses
