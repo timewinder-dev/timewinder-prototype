@@ -1,5 +1,7 @@
 import ast
 import inspect
+import sys
+
 from .ast import Algorithm
 
 
@@ -7,9 +9,16 @@ class UncovertableException(BaseException):
     pass
 
 
+def print_ast(py_ast):
+    if sys.version_info.minor >= 9:
+        print(ast.dump(py_ast, indent=2))
+    else:
+        print(ast.dump(py_ast))
+
+
 def to_algorithm(func) -> Algorithm:
     py_ast = _get_py_ast(func)
-    print(ast.dump(py_ast, indent=2))
+    print_ast(py_ast)
     return Algorithm(func, py_ast)
 
 
