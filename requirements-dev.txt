@@ -8,4 +8,5 @@ pytest-benchmark
 hypothesis
 tox
 dataclasses
+msgpack
 varname

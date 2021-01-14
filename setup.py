@@ -20,6 +20,7 @@ setuptools.setup(
     ],
     install_requires=[
         "dataclasses",
+        "msgpack",
         "varname",
     ],
     python_requires=">=3.6",
