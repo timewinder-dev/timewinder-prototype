@@ -19,6 +19,7 @@ class Hash:
         return "Hash(%s)" % self.bytes.hex()
 
 
+TreeType = Union[dict, list]
 FlatValueType = Union[str, int, float, bool, None, Hash, bytes]
 ValidValueType = Union[FlatValueType, Generator]
 TreeableType = Union[ValidValueType, dict, list]

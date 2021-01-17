@@ -1,6 +1,6 @@
 import telltale
 
-from telltale.expanders import Set
+from telltale.generators import Set
 from telltale.constraints import ConstraintError
 
 
@@ -36,7 +36,7 @@ def test_overdraft_1():
     )
     ev.evaluate()
     ev._print_state_space()
-    assert ev.stats.states == 3
+    assert ev.stats.cas_objects == 7
 
 
 def test_overdraft_initial_conditions():
@@ -86,4 +86,4 @@ def test_overdraft_initial_conditions():
         print(e.state)
 
     assert got_error
-    assert ev.stats.states == 12
+    assert ev.stats.cas_objects == 24

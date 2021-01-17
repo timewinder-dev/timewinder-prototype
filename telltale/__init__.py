@@ -6,4 +6,3 @@ from .evaluation import Evaluator
 from .thread import step
 from .thread import Algorithm
 from .constraints import ForAll
-from .expanders import Set

@@ -5,13 +5,10 @@ from abc import abstractmethod
 
 from typing import Dict
 from typing import Iterable
-from typing import Union
 
+from .tree import TreeType
 from .tree import Hash
 from .tree import non_flat_keys
-
-
-TreeType = Union[dict, list]
 
 
 class CAS(ABC):
@@ -21,6 +18,14 @@ class CAS(ABC):
 
     @abstractmethod
     def get(self, sha: Hash) -> TreeType:
+        pass
+
+    @abstractmethod
+    def debug_print(self):
+        pass
+
+    @abstractmethod
+    def size(self) -> int:
         pass
 
     def restore(self, sha: Hash) -> TreeType:
@@ -48,3 +53,15 @@ class MemoryCAS(CAS):
 
     def get(self, sha: Hash) -> TreeType:
         return copy.copy(self.store[sha.bytes])
+
+    def debug_print(self):
+        import pprint
+
+        for k, v in self.store.items():
+            print("")
+            print(f"{k.hex()}")
+            print("=" * 10)
+            pprint.pprint(v)
+
+    def size(self) -> int:
+        return len(self.store)

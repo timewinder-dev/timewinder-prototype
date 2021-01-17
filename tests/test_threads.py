@@ -36,5 +36,5 @@ def test_run_deep_calls():
     )
 
     ev.evaluate()
-    assert ev.stats.states == 5
+    assert ev.stats.cas_objects == 10
     ev._print_state_space()

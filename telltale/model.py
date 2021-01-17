@@ -1,16 +1,16 @@
 from abc import ABC
 from abc import abstractmethod
+from uuid import uuid4
 from varname import varname
 
-from typing import List
-from typing import Tuple
+from telltale.statetree import TreeType
 
 
 def model(cls):
     """Decorator wrapping a class representing model state."""
 
     def wrapper(*args, **kwargs):
-        name = varname()
+        name = varname(raise_exc=False)
         return Model(cls, name, args, kwargs)
 
     wrapper._cls = cls
@@ -19,11 +19,12 @@ def model(cls):
 
 class BaseModel(ABC):
     @abstractmethod
-    def save_state(self) -> List[Tuple]:
+    def get_state(self) -> TreeType:
         pass
 
     @abstractmethod
-    def restore_state(self, state: List[Tuple]) -> None:
+    def set_state(self, state: TreeType) -> None:
+        """Takes ownership of the given state"""
         pass
 
 
@@ -32,19 +33,17 @@ class Model(BaseModel):
 
     def __init__(self, cls, name, args, kwargs):
         self._cls = cls
-        self._name = name
         self._instance = cls(*args, **kwargs)
+        if name is not None:
+            self._name = name
+        else:
+            self._name = uuid4().hex
 
-    def save_state(self) -> List[Tuple]:
-        out = sorted(list(self._instance.__dict__.items()))
-        return out
-
-    def state_dict(self):
+    def get_state(self):
         return self._instance.__dict__
 
-    def restore_state(self, state: List[Tuple]) -> None:
-        for k, v in state:
-            self._instance.__dict__[k] = v
+    def set_state(self, state: TreeType) -> None:
+        self._instance.__dict__ = state
 
     def __getattr__(self, key):
         return getattr(self._instance, key)
@@ -56,4 +55,4 @@ class Model(BaseModel):
         return setattr(self._instance, key, val)
 
     def __repr__(self):
-        return "%s" % (self.save_state())
+        return "%s: %s" % (self._name, self.get_state())

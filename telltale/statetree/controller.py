@@ -2,7 +2,6 @@ import itertools
 import types
 import copy
 
-from telltale.model import BaseModel
 from .cas import CAS
 from .tree import non_flat_keys
 from .tree import Hash
@@ -13,22 +12,33 @@ from typing import Dict
 from typing import Iterable
 from typing import List
 from typing import Union
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from telltale.model import BaseModel
 
 
 class StateController:
     def __init__(self, cas: CAS):
         self.cas = cas
-        self.tree: Dict[str, BaseModel] = {}
+        self.tree: Dict[str, "BaseModel"] = {}
         self.checkouts: List[str] = []
 
-    def mount(self, at: str, model: BaseModel):
+    def get_model_list(self) -> Iterable["BaseModel"]:
+        return self.tree.values()
+
+    def mount(self, at: str, model: "BaseModel"):
         self.tree[at] = model
 
-    def commit(self):
-        pass
+    def commit(self) -> Iterable[Hash]:
+        to_commit = {k: m.get_state() for k, m in self.tree.items()}
+        return flatten_to_cas(to_commit, self.cas)
 
     def restore(self, state_hash: Hash):
-        pass
+        restored = self.cas.restore(state_hash)
+        assert isinstance(restored, dict), "StateController only saves dicts"
+        for k, v in restored.items():
+            self.tree[k].set_state(v)
 
 
 def flatten_to_cas(tree: Union[dict, list], cas: CAS) -> Iterable[Hash]:
