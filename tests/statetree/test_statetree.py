@@ -1,4 +1,5 @@
 import pytest
+import types
 
 import telltale.statetree.tree as tree
 import telltale.statetree.cas as cas
@@ -18,12 +19,11 @@ example = {
 
 
 def test_convert_tree():
-    t = tree.treeify_value(example)
     with pytest.raises(AssertionError):
-        h = t.hash()
+        h = tree.hash_flat_tree(example)
 
     c = cas.MemoryCAS()
-    g = list(controller.flatten_to_cas(t, c))
+    g = list(controller.flatten_to_cas(example, c))
     assert len(g) == 1
     h = g[0]
     assert h.hex() == "76d66a06f234fb456f08e439d87f9b254c9ffe3839866b1c9420397caf1e85ff"
@@ -31,15 +31,9 @@ def test_convert_tree():
     assert len(c.store) == 3
 
 
-def test_treeify_microbenchmark(benchmark):
-    benchmark(tree.treeify_value, example)
-
-
 def test_flatten_to_cas_microbenchmark(benchmark):
-    t = tree.treeify_value(example)
     c = cas.MemoryCAS()
-
-    benchmark(controller.flatten_to_cas, t, c)
+    benchmark(controller.flatten_to_cas, example, c)
 
 
 def test_flatten_generator(benchmark):
@@ -48,12 +42,12 @@ def test_flatten_generator(benchmark):
         "b": (i for i in range(4)),
     }
 
-    t = tree.treeify_value(generator)
     c = cas.MemoryCAS()
 
-    shas = list(benchmark(controller.flatten_to_cas, t, c))
+    shas = list(benchmark(controller.flatten_to_cas, generator, c))
     assert len(shas) == 20
     assert len(c.store) == 20
+    assert isinstance(generator["a"], types.GeneratorType)
 
     restore = c.store.get(shas[-1].bytes)
     assert restore["a"] == 4
@@ -68,10 +62,9 @@ def test_nested_generator(benchmark):
         "b": (i for i in range(4)),
     }
 
-    t = tree.treeify_value(generator)
     c = cas.MemoryCAS()
 
-    shas = list(benchmark(controller.flatten_to_cas, t, c))
+    shas = list(benchmark(controller.flatten_to_cas, generator, c))
     assert len(shas) == 20
     assert len(c.store) == 25
 
@@ -90,10 +83,9 @@ def test_subtree_reuse():
         },
     }
 
-    t = tree.treeify_value(generator)
     c = cas.MemoryCAS()
 
-    shas = list(controller.flatten_to_cas(t, c))
+    shas = list(controller.flatten_to_cas(generator, c))
     assert len(shas) == 20
     assert len(c.store) == 25
     # The full number of computed shas ought to be 29; but the

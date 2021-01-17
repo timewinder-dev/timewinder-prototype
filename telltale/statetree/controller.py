@@ -1,25 +1,28 @@
 import itertools
 import types
+import copy
 
 from telltale.model import BaseModel
 from .cas import CAS
-from .tree import Tree
-from .tree import DictTree
+from .tree import non_flat_keys
 from .tree import Hash
+from .tree import hash_flat_tree
 from .tree import is_flat_type
 
+from typing import Dict
 from typing import Iterable
 from typing import List
+from typing import Union
 
 
 class StateController:
     def __init__(self, cas: CAS):
         self.cas = cas
-        self.tree = DictTree()
+        self.tree: Dict[str, BaseModel] = {}
         self.checkouts: List[str] = []
 
     def mount(self, at: str, model: BaseModel):
-        pass
+        self.tree[at] = model
 
     def commit(self):
         pass
@@ -28,12 +31,12 @@ class StateController:
         pass
 
 
-def flatten_to_cas(tree: Tree, cas: CAS) -> Iterable[Hash]:
-    non_flats = tree._non_flat_keys()
+def flatten_to_cas(tree: Union[dict, list], cas: CAS) -> Iterable[Hash]:
+    non_flats = non_flat_keys(tree)
 
     # Base case; store and return hash
     if len(non_flats) == 0:
-        h = tree.hash()
+        h = hash_flat_tree(tree)
         cas.put(h, tree)
         yield h
         return
@@ -43,24 +46,26 @@ def flatten_to_cas(tree: Tree, cas: CAS) -> Iterable[Hash]:
     # Create the list of generators to pair with the keys
     # they came from
     for key in non_flats:
-        val = tree.get(key)
-        if isinstance(val, Tree):
+        val = tree[key]
+        if isinstance(val, dict) or isinstance(val, list):
             generators.append(flatten_to_cas(val, cas))
         elif isinstance(val, types.GeneratorType):
             generators.append(val)
         else:
             raise TypeError("Unexpected type while flattening to CAS")
 
+    # Shallow copy this layer, so we can edit it.
+    tree_copy = copy.copy(tree)
     # Generate the full outer join of the possible values for each key
     for state in itertools.product(*generators):
         # Fill in each key
         for k, v in zip(non_flats, state):
-            if not is_flat_type(v) and not isinstance(v, Tree):
+            if not is_flat_type(v):
                 raise TypeError("Generator produced unexpected type flattening to CAS")
-            tree.set(k, v)
+            tree_copy[k] = v
         # Now, if all the resulting keys are flat, the recursive call
         # hits the base case. If any trees were generated, the recursive
         # call will progress with the newly-flat values filled in and
         # will generate the others.
-        yield from flatten_to_cas(tree, cas)
+        yield from flatten_to_cas(tree_copy, cas)
     return
