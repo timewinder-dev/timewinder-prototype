@@ -11,13 +11,13 @@ def model(cls):
 
     def wrapper(*args, **kwargs):
         name = varname(raise_exc=False)
-        return Model(cls, name, args, kwargs)
+        return ObjectModel(cls, name, args, kwargs)
 
     wrapper._cls = cls
     return wrapper
 
 
-class BaseModel(ABC):
+class Model(ABC):
     @abstractmethod
     def get_state(self) -> TreeType:
         pass
@@ -28,7 +28,7 @@ class BaseModel(ABC):
         pass
 
 
-class Model(BaseModel):
+class ObjectModel(Model):
     """Represents a stateful object"""
 
     def __init__(self, cls, name, args, kwargs):

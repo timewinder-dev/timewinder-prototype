@@ -36,12 +36,12 @@ def test_multi_eval():
 
     ev = telltale.Evaluator(
         models=[a],
-        threads=[telltale.Algorithm(t(a), x(a))],
+        threads=[telltale.FuncProcess(t(a), x(a))],
     )
 
     ev.evaluate(steps=4)
     ev._print_state_space()
-    assert ev.stats.cas_objects == 4
+    assert ev.stats.states == 3
 
 
 def test_subcall_onestate():
@@ -63,7 +63,7 @@ def test_subcall_onestate():
     )
 
     ev.evaluate(steps=4)
-    assert ev.stats.cas_objects == 2
+    assert ev.stats.states == 2
 
 
 def test_assert_fail():

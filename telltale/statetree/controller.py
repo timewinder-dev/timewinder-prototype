@@ -15,19 +15,19 @@ from typing import Union
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from telltale.model import BaseModel
+    from telltale.model import Model
 
 
 class StateController:
     def __init__(self, cas: CAS):
         self.cas = cas
-        self.tree: Dict[str, "BaseModel"] = {}
+        self.tree: Dict[str, "Model"] = {}
         self.checkouts: List[str] = []
 
-    def get_model_list(self) -> Iterable["BaseModel"]:
+    def get_model_list(self) -> Iterable["Model"]:
         return self.tree.values()
 
-    def mount(self, at: str, model: "BaseModel"):
+    def mount(self, at: str, model: "Model"):
         self.tree[at] = model
 
     def commit(self) -> Iterable[Hash]:

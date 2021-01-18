@@ -23,7 +23,7 @@ def test_run_deep_calls():
     def d(m):
         m.foo = "end2"
 
-    alg = telltale.Algorithm(
+    alg = telltale.FuncProcess(
         a(model),
         b(model),
         c(model),
@@ -36,5 +36,5 @@ def test_run_deep_calls():
     )
 
     ev.evaluate()
-    assert ev.stats.cas_objects == 10
+    assert ev.stats.states == 5
     ev._print_state_space()

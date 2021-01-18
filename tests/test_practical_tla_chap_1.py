@@ -22,7 +22,7 @@ def test_overdraft_1():
     def deposit(reciever, amount):
         reciever.acc = reciever.acc + amount
 
-    alg = telltale.Algorithm(
+    alg = telltale.FuncProcess(
         withdraw(alice, 3),
         deposit(bob, 3),
     )
@@ -36,7 +36,7 @@ def test_overdraft_1():
     )
     ev.evaluate()
     ev._print_state_space()
-    assert ev.stats.cas_objects == 7
+    assert ev.stats.states == 3
 
 
 def test_overdraft_initial_conditions():
@@ -63,7 +63,7 @@ def test_overdraft_initial_conditions():
     def deposit(reciever, state):
         reciever.acc = reciever.acc + state.amt
 
-    alg = telltale.Algorithm(
+    alg = telltale.FuncProcess(
         withdraw(alice, s),
         deposit(bob, s),
     )
@@ -86,4 +86,4 @@ def test_overdraft_initial_conditions():
         print(e.state)
 
     assert got_error
-    assert ev.stats.cas_objects == 24
+    assert ev.stats.states == 12

@@ -1,12 +1,10 @@
 from telltale.model import Model
-from telltale.thread import PCStack
 
 import ast
 
 from typing import Any
 from typing import Callable
 from typing import Dict
-from typing import List
 
 
 class Algorithm:
@@ -35,12 +33,3 @@ class BoundAlgorithm:
                 self.binds[name] = a
             else:
                 self.state[name] = a
-
-    def execute_step(self, stack: PCStack) -> List[PCStack]:
-        i = stack[0]
-        node = self.alg.ast.body[i]
-        if isinstance(node, ast.Pass):
-            pass
-        elif isinstance(node, ast.Assign):
-            pass
-        return [[]]

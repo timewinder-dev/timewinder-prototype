@@ -4,6 +4,7 @@ from typing import Optional
 from varname import varname
 
 from .model import Model
+from .process import Process
 
 
 class ForAll:
@@ -14,6 +15,8 @@ class ForAll:
 
     def __call__(self, model_states):
         for m in model_states:
+            if isinstance(m, Process):
+                continue
             if self.modeltype is not None:
                 if not isinstance(m._instance, self.modeltype._cls):
                     continue
