@@ -18,6 +18,10 @@ def step(function):
     return Step(function)
 
 
+class StopProcess(BaseException):
+    pass
+
+
 class Process(Model, ABC):
     @abstractmethod
     def execute(self):
@@ -64,12 +68,17 @@ class FuncProcess(Process):
         self.state = state["state"]
 
     def can_execute(self) -> bool:
+        if self.pc < 0:
+            return False
         return self.pc < len(self.steps)
 
     def execute(self):
         assert self.can_execute()
-        self.steps[self.pc]._eval(self.state)
-        self.pc += 1
+        try:
+            self.steps[self.pc]._eval(self.state)
+            self.pc += 1
+        except StopProcess:
+            self.pc = -1
 
     def __repr__(self) -> str:
         funcs = ",".join([s.func.__name__ for s in self.steps])
