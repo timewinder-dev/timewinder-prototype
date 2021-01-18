@@ -9,7 +9,7 @@ from telltale.statetree import MemoryCAS
 from telltale.statetree import Hash
 
 from .process import Process
-from .process import Step
+from .process import BoundStep
 from .process import FuncProcess
 
 from .constraints import ConstraintError
@@ -28,6 +28,7 @@ class EvaluatorStats:
 class EvalThunk:
     trace: List[int]
     state_hash: Hash
+    initial_hash: Hash
 
 
 def _prepare_threads(threads) -> List[Process]:
@@ -35,7 +36,7 @@ def _prepare_threads(threads) -> List[Process]:
     for t in threads:
         if isinstance(t, Process):
             out.append(t)
-        elif isinstance(t, Step):
+        elif isinstance(t, BoundStep):
             out.append(FuncProcess(t))
         else:
             raise TypeError("Threads need to be prepared")
@@ -64,7 +65,7 @@ class Evaluator:
         initial_hashes = self.state_controller.commit()
         next_queue = []
         for h in initial_hashes:
-            next_queue.append(EvalThunk(trace=[], state_hash=h))
+            next_queue.append(EvalThunk(trace=[], state_hash=h, initial_hash=h))
 
         for step in range(1, steps + 1):
             state_queue = next_queue
@@ -78,13 +79,13 @@ class Evaluator:
                 new_runs = self._eval_state(thunk)
                 next_queue.extend(new_runs)
 
-    def _check_constraints(self, trace: List[int]):
+    def _check_constraints(self, t: EvalThunk):
         for spec in self.specs:
             models = self.state_controller.get_model_list()
             error = spec(models)
             if error is not None:
-                error.trace = trace
-                error.state = "\n".join([m.__repr__() for m in models])
+                error.thunk = t
+                error.state = self.state_controller.tree
                 raise error
 
     def _eval_state(self, t: EvalThunk) -> List[EvalThunk]:
@@ -94,7 +95,7 @@ class Evaluator:
         self._evaled_states.add(t.state_hash.bytes)
         self.state_controller.restore(t.state_hash)
         try:
-            self._check_constraints(t.trace)
+            self._check_constraints(t)
         except ConstraintError as e:
             raise e
         runnable_threads = [i for i, t in enumerate(self.threads) if t.can_execute()]
@@ -119,8 +120,23 @@ class Evaluator:
             thread.execute()
             next_hashes = self.state_controller.commit()
             for h in next_hashes:
-                out.append(EvalThunk(trace=this_trace, state_hash=h))
+                out.append(
+                    EvalThunk(
+                        trace=this_trace, state_hash=h, initial_hash=t.initial_hash
+                    )
+                )
         return out
+
+    def replay_thunk(self, t: EvalThunk):
+        self.state_controller.restore(t.initial_hash)
+        print(self.state_controller.tree)
+        step = 0
+        for i in t.trace:
+            step += 1
+            print("Step %d" % step)
+            self._execute_threads([i], t)
+            print("Post-step-%d-state: " % step)
+            print(self.state_controller.tree)
 
     def _print_state_space(self):
         self.state_controller.cas.debug_print()

@@ -6,7 +6,7 @@ from tests.test_helpers import A
 
 def test_simple_eval():
     @telltale.step
-    def t(m):
+    def t(state, m):
         if m.foo == "a":
             m.foo = "b"
             return
@@ -24,11 +24,11 @@ def test_simple_eval():
 
 def test_multi_eval():
     @telltale.step
-    def t(m):
+    def t(state, m):
         m.foo = "b"
 
     @telltale.step
-    def x(m):
+    def x(state, m):
         assert m.foo == "b"
         m.foo = "a"
 
@@ -46,7 +46,7 @@ def test_multi_eval():
 
 def test_subcall_onestate():
     @telltale.step
-    def t(m):
+    def t(state, m):
         m.foo = "b"
         x(m)
 
@@ -68,11 +68,11 @@ def test_subcall_onestate():
 
 def test_assert_fail():
     @telltale.step
-    def t(m):
+    def t(state, m):
         m.foo = "b"
 
     @telltale.step
-    def x(m):
+    def x(state, m):
         assert m.foo == "b"
 
     a = A()

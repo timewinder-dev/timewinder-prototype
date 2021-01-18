@@ -15,11 +15,11 @@ def test_overdraft_1():
     bob = Account("bob")
 
     @telltale.step
-    def withdraw(sender, amount):
+    def withdraw(state, sender, amount):
         sender.acc = sender.acc - amount
 
     @telltale.step
-    def deposit(reciever, amount):
+    def deposit(state, reciever, amount):
         reciever.acc = reciever.acc + amount
 
     alg = telltale.FuncProcess(
@@ -46,32 +46,29 @@ def test_overdraft_initial_conditions():
             self.name = name
             self.acc = 5
 
-    @telltale.model
-    class ThreadState:
-        def __init__(self):
-            self.amt = Set(range(1, 7))
-
     alice = Account("alice")
     bob = Account("bob")
-    s = ThreadState()
 
     @telltale.step
-    def withdraw(sender, state):
-        sender.acc = sender.acc - state.amt
+    def withdraw(state, sender):
+        sender.acc = sender.acc - state["amt"]
 
     @telltale.step
-    def deposit(reciever, state):
-        reciever.acc = reciever.acc + state.amt
+    def deposit(state, reciever):
+        reciever.acc = reciever.acc + state["amt"]
 
     alg = telltale.FuncProcess(
-        withdraw(alice, s),
-        deposit(bob, s),
+        withdraw(alice),
+        deposit(bob),
+        state={
+            "amt": Set(range(1, 7)),
+        },
     )
 
     no_overdrafts = telltale.ForAll(Account, lambda a: a.acc >= 0)
 
     ev = telltale.Evaluator(
-        models=[alice, bob, s],
+        models=[alice, bob],
         threads=[alg],
         specs=[no_overdrafts],
     )
@@ -82,8 +79,52 @@ def test_overdraft_initial_conditions():
     except ConstraintError as e:
         got_error = True
         print(e.name)
-        print(e.trace)
-        print(e.state)
+        print(e.thunk)
 
     assert got_error
     assert ev.stats.states == 12
+
+
+def test_multiple_processes():
+    @telltale.model
+    class Account:
+        def __init__(self, name):
+            self.name = name
+            self.acc = 5
+
+    alice = Account("alice")
+    bob = Account("bob")
+
+    @telltale.step
+    def withdraw(state, sender):
+        sender.acc = sender.acc - state["amt"]
+
+    @telltale.step
+    def deposit(state, reciever):
+        reciever.acc = reciever.acc + state["amt"]
+
+    def alg():
+        return telltale.FuncProcess(
+            withdraw(alice),
+            deposit(bob),
+            state={"amt": Set(range(1, 5))},
+        )
+
+    no_overdrafts = telltale.ForAll(Account, lambda a: a.acc >= 0)
+
+    ev = telltale.Evaluator(
+        models=[alice, bob],
+        threads=[alg(), alg()],
+        specs=[no_overdrafts],
+    )
+
+    got_error = False
+    try:
+        ev.evaluate()
+    except ConstraintError as e:
+        got_error = True
+        print(e.name, " failed")
+        ev.replay_thunk(e.thunk)
+
+    assert got_error
+    assert ev.stats.states == 71

@@ -31,35 +31,46 @@ class Process(Model, ABC):
 class Step:
     def __init__(self, func):
         self.func = func
-        self.args = None
-        self.kwargs = None
-        self.stack = []
 
     def __call__(self, *args, **kwargs):
+        return BoundStep(self.func, args, kwargs)
+
+
+class BoundStep:
+    def __init__(self, func, args, kwargs):
         self.args = args
         self.kwargs = kwargs
-        return self
+        self.func = func
 
-    def _eval(self):
-        return self.func(*self.args, **self.kwargs)
+    def _eval(self, thread_state):
+        return self.func(thread_state, *self.args, **self.kwargs)
 
 
 class FuncProcess(Process):
-    def __init__(self, *args):
-        self.steps: List[Step] = args
+    def __init__(self, *args, state=None):
+        self.steps: List[BoundStep] = args
         self.pc = 0
+        self.state = state
 
     def get_state(self) -> TreeType:
-        return {"pc": self.pc}
+        return {
+            "pc": self.pc,
+            "state": self.state,
+        }
 
     def set_state(self, state: TreeType) -> None:
         assert isinstance(state, dict)
         self.pc = state["pc"]
+        self.state = state["state"]
 
     def can_execute(self) -> bool:
         return self.pc < len(self.steps)
 
     def execute(self):
         assert self.can_execute()
-        self.steps[self.pc]._eval()
+        self.steps[self.pc]._eval(self.state)
         self.pc += 1
+
+    def __repr__(self) -> str:
+        funcs = ",".join([s.func.__name__ for s in self.steps])
+        return f"FuncProcess([{funcs}])@{self.pc}:{self.state}"

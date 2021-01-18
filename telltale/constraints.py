@@ -27,7 +27,7 @@ class ForAll:
 
 
 class ConstraintError(BaseException):
-    def __init__(self, name, trace=None):
+    def __init__(self, name, thunk=None):
         self.name = name
-        self.trace = trace
+        self.thunk = thunk
         self.state = None

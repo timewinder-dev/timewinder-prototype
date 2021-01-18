@@ -7,20 +7,20 @@ def test_run_deep_calls():
     model = A()
 
     @telltale.step
-    def a(m):
+    def a(state, m):
         print("in a")
         m.foo = "b"
 
     @telltale.step
-    def b(m):
+    def b(state, m):
         m.foo = "c"
 
     @telltale.step
-    def c(m):
+    def c(state, m):
         m.foo = "end1"
 
     @telltale.step
-    def d(m):
+    def d(state, m):
         m.foo = "end2"
 
     alg = telltale.FuncProcess(
