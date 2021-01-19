@@ -1,4 +1,5 @@
 import telltale
+import pytest
 
 from telltale.reinterp import interp
 from telltale.generators import Set
@@ -62,3 +63,34 @@ def test_overdraft_initial_conditions():
 
     assert got_error
     assert ev.stats.states == 12
+
+
+@pytest.mark.benchmark(group="practical_tla_1")
+def test_check_and_withdraw_reinterp(benchmark):
+    @interp
+    def check_and_withdraw(sender, reciever, amt):
+        if amt <= sender.acc:
+            sender.acc = sender.acc - amt
+            yield "deposit"
+            reciever.acc = reciever.acc + amt
+
+    no_overdrafts = telltale.ForAll(Account, lambda a: a.acc >= 0)
+
+    def reset_and_eval():
+        alice = Account("alice", 5)
+        bob = Account("bob", 5)
+
+        ev = telltale.Evaluator(
+            models=[alice, bob],
+            threads=[
+                check_and_withdraw(alice, bob, Set(range(1, 5))),
+                check_and_withdraw(alice, bob, Set(range(1, 5))),
+            ],
+            specs=[no_overdrafts],
+        )
+        ev.evaluate(steps=10)
+        return ev.stats
+
+    stats = benchmark(reset_and_eval)
+
+    assert stats.states == 144
