@@ -1,4 +1,4 @@
-import telltale.reinterp as reinterp
+from telltale.reinterp.process import ASTProcessClosure
 
 
 def Call(x):
@@ -16,8 +16,19 @@ def f(acc):
     return ll
 
 
-def test_init():
+def test_pass_func():
+    def f(x):
+        pass
 
-    reinterp.to_algorithm(f)
-    # do some checks
-    # reinterp.interp(steps[0])
+    a = ASTProcessClosure(f)
+    proc = a(2)
+    proc.execute(None)
+
+
+def test_dumb_assign():
+    def f(x):
+        a = 2
+
+    a = ASTProcessClosure(f)
+    proc = a(2)
+    proc.execute(None)

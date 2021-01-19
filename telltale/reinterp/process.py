@@ -1,7 +1,9 @@
 from telltale.process import Process
 from telltale.model import Model
-from .load_function import get_py_ast
 from telltale.statetree import TreeType
+
+from .load_function import get_py_ast
+from .statement import interpret_statement
 
 from typing import Any
 from typing import Callable
@@ -25,6 +27,7 @@ class ASTProcess(Process):
         self.n_steps = len(self.ast.body)
         self.binds: Dict[str, Any] = {}
         self.state: Dict[str, Any] = {}
+        self.pc = 0
         if len(in_kwargs) != 0:
             raise NotImplementedError("Need keyword arg binding support")
         argnames = [a.arg for a in self.ast.args.args]
@@ -42,7 +45,9 @@ class ASTProcess(Process):
         pass
 
     def execute(self, state_controller):
-        pass
+        self.state_controller = state_controller
+        interpret_statement(self, self.ast.body[self.pc])
+        self.state_controller = None
 
     def get_state(self) -> TreeType:
         pass
