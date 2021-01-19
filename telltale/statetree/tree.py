@@ -1,4 +1,5 @@
 from hashlib import sha256
+import types
 import msgpack
 
 from typing import Iterable
@@ -20,13 +21,19 @@ class Hash:
 
 
 TreeType = Union[dict, list]
-FlatValueType = Union[str, int, float, bool, None, Hash, bytes]
+FlatValueType = Union[Hash, str, int, bool, float, None, bytes]
 ValidValueType = Union[FlatValueType, Generator]
 TreeableType = Union[ValidValueType, dict, list]
 
 
-def is_flat_type(v) -> bool:
-    return any((isinstance(v, t) for t in FlatValueType.__args__))  # type: ignore
+def is_deep_type(v) -> bool:
+    if isinstance(v, list):
+        return True
+    if isinstance(v, dict):
+        return True
+    if isinstance(v, types.GeneratorType):
+        return True
+    return False
 
 
 def msgpack_ext_default(obj):
@@ -69,6 +76,6 @@ def non_flat_keys(tree) -> List:
     else:
         raise TypeError("Can only check keys of nestable objects")
     for k, v in items:
-        if not is_flat_type(v):
+        if is_deep_type(v):
             out.append(k)
     return out
