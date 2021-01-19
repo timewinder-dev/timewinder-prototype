@@ -40,15 +40,19 @@ class ObjectModel(Model):
         self._cls = cls
         self._instance = cls(*args, **kwargs)
         if name is not None:
-            self.name = name
+            self._name = name
         else:
-            self.name = uuid4().hex
+            self._name = uuid4().hex
 
     def get_state(self):
         return self._instance.__dict__
 
     def set_state(self, state: TreeType) -> None:
         self._instance.__dict__ = state
+
+    @property
+    def name(self) -> str:
+        return self._name
 
     def __getattr__(self, key):
         return getattr(self._instance, key)

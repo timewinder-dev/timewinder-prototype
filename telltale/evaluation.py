@@ -117,7 +117,7 @@ class Evaluator:
             this_trace.append(thread_id)
             thread = self.threads[thread_id]
             self._stats.thread_executions += 1
-            thread.execute()
+            thread.execute(self.state_controller)
             next_hashes = self.state_controller.commit()
             for h in next_hashes:
                 out.append(
