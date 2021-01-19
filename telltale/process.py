@@ -24,7 +24,7 @@ class StopProcess(BaseException):
 
 class Process(Model, ABC):
     @abstractmethod
-    def execute(self):
+    def execute(self, state_controller):
         pass
 
     @abstractmethod
@@ -56,6 +56,10 @@ class FuncProcess(Process):
         self.pc = 0
         self.state = state
 
+    @property
+    def name(self):
+        return self.__repr__()
+
     def get_state(self) -> TreeType:
         return {
             "pc": self.pc,
@@ -72,7 +76,7 @@ class FuncProcess(Process):
             return False
         return self.pc < len(self.steps)
 
-    def execute(self):
+    def execute(self, state_controller):
         assert self.can_execute()
         try:
             self.steps[self.pc]._eval(self.state)

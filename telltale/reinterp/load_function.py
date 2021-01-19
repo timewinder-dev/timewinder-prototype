@@ -2,8 +2,6 @@ import ast
 import inspect
 import sys
 
-from .ast import Algorithm
-
 
 class UncovertableException(BaseException):
     pass
@@ -16,13 +14,7 @@ def print_ast(py_ast):
         print(ast.dump(py_ast))
 
 
-def to_algorithm(func) -> Algorithm:
-    py_ast = _get_py_ast(func)
-    print_ast(py_ast)
-    return Algorithm(func, py_ast)
-
-
-def _get_py_ast(func):
+def get_py_ast(func):
     src_lines, _ = inspect.getsourcelines(func)
     src_lines = _dedent(src_lines)
     src_string = "".join(src_lines)

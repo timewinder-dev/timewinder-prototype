@@ -1,5 +1,6 @@
 from abc import ABC
 from abc import abstractmethod
+from abc import abstractproperty
 from uuid import uuid4
 from varname import varname
 
@@ -18,6 +19,10 @@ def model(cls):
 
 
 class Model(ABC):
+    @abstractproperty
+    def name(self) -> str:
+        pass
+
     @abstractmethod
     def get_state(self) -> TreeType:
         pass
@@ -35,9 +40,9 @@ class ObjectModel(Model):
         self._cls = cls
         self._instance = cls(*args, **kwargs)
         if name is not None:
-            self._name = name
+            self.name = name
         else:
-            self._name = uuid4().hex
+            self.name = uuid4().hex
 
     def get_state(self):
         return self._instance.__dict__
