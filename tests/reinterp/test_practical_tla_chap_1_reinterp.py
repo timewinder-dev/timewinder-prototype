@@ -83,8 +83,8 @@ def test_check_and_withdraw_reinterp(benchmark):
         ev = telltale.Evaluator(
             models=[alice, bob],
             threads=[
-                check_and_withdraw(alice, bob, Set(range(1, 5))),
-                check_and_withdraw(alice, bob, Set(range(1, 5))),
+                check_and_withdraw(alice, bob, Set(range(1, 6))),
+                check_and_withdraw(alice, bob, Set(range(1, 6))),
             ],
             specs=[no_overdrafts],
         )
@@ -93,4 +93,4 @@ def test_check_and_withdraw_reinterp(benchmark):
 
     stats = benchmark(reset_and_eval)
 
-    assert stats.states == 144
+    assert stats.states == 225
