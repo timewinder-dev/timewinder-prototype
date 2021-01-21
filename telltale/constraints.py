@@ -1,29 +1,73 @@
+from abc import ABC
+from abc import abstractmethod
+from abc import abstractproperty
+
 from typing import Callable
+from typing import List
 from typing import Optional
 
 from varname import varname
 
 from .model import Model
-from .process import Process
+from .model import ObjectModel
 
 
-class ForAll:
-    def __init__(self, model: Optional[Model], pred: Callable[[Model], bool]):
+class FuncPredicate:
+    def __init__(self, func):
+        self.func = func
+
+    def __call__(self, *args, **kwargs):
+        return BoundFuncPredicate(self.func, args, kwargs)
+
+
+class Predicate(ABC):
+    @abstractmethod
+    def check(self, models: List[Model]) -> bool:
+        pass
+
+    @abstractproperty
+    def name(self) -> str:
+        pass
+
+
+class BoundFuncPredicate(Predicate):
+    def __init__(self, func, args, kwargs):
+        self.args = args
+        self.kwargs = kwargs
+        self.func = func
+
+    def check(self, models: List[Model]) -> bool:
+        # models is ignored, as the binding for a python predicate
+        # is already in args/kwargs
+        v = self.func(*self.args, **self.kwargs)
+        if not isinstance(v, bool):
+            raise TypeError("All predicate functions must return a boolean")
+        return v
+
+
+class ForAll(Predicate):
+    def __init__(
+        self, model: Optional[ObjectModel], pred: Callable[[ObjectModel], bool]
+    ):
         self.modeltype = model
         self.pred = pred
-        self.name = varname()
+        self._name = varname()
 
-    def __call__(self, model_states):
-        for m in model_states:
-            if isinstance(m, Process):
+    @property
+    def name(self) -> str:
+        return self._name
+
+    def check(self, models: List[Model]) -> bool:
+        for m in models:
+            if not isinstance(m, ObjectModel):
                 continue
             if self.modeltype is not None:
                 if not isinstance(m._instance, self.modeltype._cls):
                     continue
             ok = self.pred(m)
             if not ok:
-                return ConstraintError(self.name)
-        return None
+                return False
+        return True
 
 
 class ConstraintError(BaseException):

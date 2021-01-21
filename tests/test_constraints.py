@@ -1,14 +1,13 @@
 import telltale
 
 from tests.test_helpers import A
-from telltale.constraints import ConstraintError
 
 
 def test_forall():
     a = A()
 
     ok = telltale.ForAll(A, lambda m: m.foo == "a")
-    assert ok([a]) is None
+    assert ok.check([a])
 
     fail = telltale.ForAll(A, lambda m: m.foo == "b")
-    assert isinstance(fail([a]), ConstraintError)
+    assert not fail.check([a])

@@ -7,4 +7,4 @@ def Set(vals: Iterable) -> Generator:
 
 
 def Range(from_val, to_val: int) -> Generator:
-    return (i for i in range(from_val, to_val))
+    return (i for i in range(from_val, to_val + 1))
