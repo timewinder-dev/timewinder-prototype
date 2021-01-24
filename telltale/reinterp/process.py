@@ -1,5 +1,3 @@
-import dis
-
 from telltale.process import Process
 from telltale.statetree import TreeType
 
@@ -8,19 +6,10 @@ from .interpreter import Interpreter
 from typing import Callable
 
 
-class BytecodeProcessClosure:
-    def __init__(self, func: Callable):
-        self.func = func
-        self.instructions = list(dis.get_instructions(func))
-
-    def __call__(self, *args, **kwargs):
-        return BytecodeProcess(self, args, kwargs)
-
-
 class BytecodeProcess(Process):
-    def __init__(self, closure: BytecodeProcessClosure, in_args, in_kwargs):
-        self._name = closure.func.__name__
-        self.interp = Interpreter(closure.func, in_args, in_kwargs)
+    def __init__(self, func: Callable, in_args=None, in_kwargs=None):
+        self._name = func.__name__
+        self.interp = Interpreter(func, in_args, in_kwargs)
 
     @property
     def name(self) -> str:

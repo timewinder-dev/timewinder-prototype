@@ -12,14 +12,6 @@ from .model import Model
 from .model import ObjectModel
 
 
-class FuncPredicate:
-    def __init__(self, func):
-        self.func = func
-
-    def __call__(self, *args, **kwargs):
-        return BoundFuncPredicate(self.func, args, kwargs)
-
-
 class Predicate(ABC):
     @abstractmethod
     def check(self, models: List[Model]) -> bool:
@@ -30,7 +22,7 @@ class Predicate(ABC):
         pass
 
 
-class BoundFuncPredicate(Predicate):
+class FuncPredicate(Predicate):
     def __init__(self, func, args, kwargs):
         self.args = args
         self.kwargs = kwargs

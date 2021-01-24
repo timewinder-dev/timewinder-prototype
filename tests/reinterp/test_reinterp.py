@@ -1,4 +1,9 @@
-from telltale.reinterp.process import BytecodeProcessClosure
+from telltale.reinterp.process import BytecodeProcess
+from telltale.closure import Closure
+
+
+def bytecodeClosure(func):
+    return Closure(func, BytecodeProcess)
 
 
 def Call(x, y):
@@ -13,7 +18,7 @@ def test_pass_func():
     def f(x):
         pass
 
-    a = BytecodeProcessClosure(f)
+    a = bytecodeClosure(f)
     proc = a(2)
     proc.execute(None)
 
@@ -23,7 +28,7 @@ def test_dumb_assign():
         x = 2
         return x + x
 
-    a = BytecodeProcessClosure(f)
+    a = bytecodeClosure(f)
     proc = a(2)
     proc.execute(None)
 
@@ -37,7 +42,7 @@ def test_interesting_assign():
         x = x - 1
         return y
 
-    a = BytecodeProcessClosure(f)
+    a = bytecodeClosure(f)
     proc = a({"foo": 1})
     proc.execute(None)
 
@@ -49,7 +54,7 @@ def test_yield():
             yield "Step 2"
         return 3
 
-    a = BytecodeProcessClosure(f)
+    a = bytecodeClosure(f)
     proc = a(1)
     proc.execute(None)
     assert proc.name == "Step 1"

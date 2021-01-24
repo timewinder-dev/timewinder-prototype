@@ -2,6 +2,7 @@ from abc import ABC
 from abc import abstractmethod
 
 from .model import Model
+from .closure import Closure
 
 from inspect import isfunction
 
@@ -15,7 +16,7 @@ def step(function):
     if not isfunction(function):
         raise TypeError("Single threads can only be created by decorators on fuctions")
 
-    return Step(function)
+    return Closure(function, Step)
 
 
 class StopProcess(BaseException):
@@ -33,14 +34,6 @@ class Process(Model, ABC):
 
 
 class Step:
-    def __init__(self, func):
-        self.func = func
-
-    def __call__(self, *args, **kwargs):
-        return BoundStep(self.func, args, kwargs)
-
-
-class BoundStep:
     def __init__(self, func, args, kwargs):
         self.args = args
         self.kwargs = kwargs
@@ -52,7 +45,7 @@ class BoundStep:
 
 class FuncProcess(Process):
     def __init__(self, *args, state=None):
-        self.steps: List[BoundStep] = args
+        self.steps: List[Step] = args
         self.pc = 0
         self.state = state
 

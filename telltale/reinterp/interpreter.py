@@ -13,14 +13,6 @@ from typing import List
 MODEL_PREFIX = "__model__"
 
 
-class BytecodeClosure:
-    def __init__(self, func: Callable):
-        self.func = func
-
-    def __call__(self, *args, **kwargs):
-        return Interpreter(self.func, args, kwargs)
-
-
 class Interpreter:
     def __init__(self, func: Callable, in_args=None, in_kwargs=None):
         self.func = func

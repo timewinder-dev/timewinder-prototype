@@ -10,7 +10,7 @@ from telltale.statetree import MemoryCAS
 from telltale.statetree import Hash
 
 from .process import Process
-from .process import BoundStep
+from .process import Step
 from .process import FuncProcess
 
 from .predicate import ConstraintError
@@ -53,7 +53,7 @@ def _prepare_threads(threads) -> List[Process]:
     for t in threads:
         if isinstance(t, Process):
             out.append(t)
-        elif isinstance(t, BoundStep):
+        elif isinstance(t, Step):
             out.append(FuncProcess(t))
         else:
             raise TypeError("Threads need to be prepared")
