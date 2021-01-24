@@ -2,31 +2,47 @@ import dis
 import operator
 
 from typing import Any
-from typing import Callable
 from typing import List
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .process import ASTProcess
-
-
-InterpretSig = Callable[["ASTProcess", dis.Instruction], None]
+    from .bytecode import OpcodeStoreInterface
 
 
 class OpcodeInterpreter:
-    def __init__(self, proc: "ASTProcess"):
+    def __init__(self, proc: "OpcodeStoreInterface", instructions):
         self.proc = proc
         self.stack: List[Any] = []
+        self.instructions: List[dis.Instruction] = instructions
+        self.pc = 0
 
-    def interpret_instruction(self, inst: dis.Instruction):
+    def push_stack(self, v: Any):
+        self.stack.append(v)
+
+    def pop_stack(self) -> Any:
+        assert len(self.stack) > 0
+        v = self.stack[-1]
+        self.stack = self.stack[:-1]
+        return v
+
+    def find_pc_for_offset(self, offset):
+        for i, x in enumerate(self.instructions):
+            if x.offset == offset:
+                return i
+
+    def interpret_instruction(self) -> bool:
+        inst = self.instructions[self.pc]
         methodname = "exec_" + inst.opname.lower()
         try:
             method = self.__getattribute__(methodname)
-            return method(inst)
+            ret = method(inst)
         except AttributeError as e:
             print(e)
-            pass
-        return self._exec_debug(inst)
+            return self._exec_debug(inst)
+        if ret is None:
+            self.pc += 1
+            return True
+        return ret
 
     def _exec_debug(self, inst):
         self.proc.debug_print()
@@ -48,7 +64,7 @@ class OpcodeInterpreter:
         self.push_stack(val)
 
     def exec_store_fast(self, inst):
-        self.proc.state[inst.argval] = self.pop_stack()
+        self.proc.store_fast(inst.argval, self.pop_stack())
 
     def exec_store_attr(self, inst):
         tos = self.pop_stack()
@@ -108,26 +124,21 @@ class OpcodeInterpreter:
 
     def exec_pop_jump_if_false(self, inst):
         if not self.pop_stack():
-            return (True, self.proc.find_pc_for_offset(inst.argval))
-        return
+            self.pc = self.find_pc_for_offset(inst.argval)
+            return True
+        return None
 
     def exec_pop_jump_if_true(self, inst):
         if self.pop_stack():
-            return (True, self.proc.find_pc_for_offset(inst.argval))
-        return
+            self.pc = self.find_pc_for_offset(inst.argval)
+            return True
+        return None
 
     def exec_return_value(self, inst):
-        return (False, -1)
+        self.pc = -1
+        return False
 
     def exec_yield_value(self, inst):
-        self.proc.hit_yield(self.stack[-1])
-        return (False, self.proc.pc + 1)
-
-    def push_stack(self, v: Any):
-        self.stack.append(v)
-
-    def pop_stack(self) -> Any:
-        assert len(self.stack) > 0
-        v = self.stack[-1]
-        self.stack = self.stack[:-1]
-        return v
+        self.proc.on_yield(self.stack[-1])
+        self.pc += 1
+        return False

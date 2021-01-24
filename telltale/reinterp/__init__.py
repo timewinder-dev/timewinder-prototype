@@ -1,5 +1,5 @@
-from .process import ASTProcessClosure
+from .process import BytecodeProcessClosure
 
 
 def interp(f):
-    return ASTProcessClosure(f)
+    return BytecodeProcessClosure(f)

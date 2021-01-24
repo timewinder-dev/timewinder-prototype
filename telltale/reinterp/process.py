@@ -4,6 +4,7 @@ from telltale.process import Process
 from telltale.model import Model
 from telltale.statetree import TreeType
 
+from .bytecode import OpcodeStoreInterface
 from .opcodes import OpcodeInterpreter
 
 from typing import Any
@@ -20,23 +21,21 @@ def _print_list(l, highlight):
     print("\n".join(["%s%s" % x for x in zip(highlights, l)]))
 
 
-class ASTProcessClosure:
+class BytecodeProcessClosure:
     def __init__(self, func: Callable):
         self.func = func
         self.instructions = list(dis.get_instructions(func))
 
     def __call__(self, *args, **kwargs):
-        return ASTProcess(self, args, kwargs)
+        return BytecodeProcess(self, args, kwargs)
 
 
-class ASTProcess(Process):
-    def __init__(self, closure: ASTProcessClosure, in_args, in_kwargs):
-        self.instructions = closure.instructions
+class BytecodeProcess(Process, OpcodeStoreInterface):
+    def __init__(self, closure: BytecodeProcessClosure, in_args, in_kwargs):
         self.func = closure.func
         self._name = self.func.__name__
         self.binds: Dict[str, Any] = {}
         self.state: Dict[str, Any] = {}
-        self.pc = 0
         if len(in_kwargs) != 0:
             raise NotImplementedError("Need keyword arg binding support")
         n_args = self.func.__code__.co_argcount
@@ -46,35 +45,30 @@ class ASTProcess(Process):
                 self.binds[name] = MODEL_PREFIX + a.name
             else:
                 self.state[name] = a
-        self.interp = OpcodeInterpreter(self)
+        self.interp = OpcodeInterpreter(self, closure.instructions)
 
     @property
     def name(self) -> str:
         return self._name
 
     def can_execute(self) -> bool:
-        if self.pc < 0:
+        if self.interp.pc < 0:
             return False
-        return self.pc < len(self.instructions)
+        return self.interp.pc < len(self.interp.instructions)
 
     def execute(self, state_controller):
         self.state_controller = state_controller
-        while self.pc < len(self.instructions):
-            ret = self.interp.interpret_instruction(self.instructions[self.pc])
-            if ret is None:
-                self.pc += 1
-            else:
-                cont, offset = ret
-                self.pc = offset
-                if not cont:
-                    break
+        while self.interp.pc < len(self.interp.instructions):
+            cont = self.interp.interpret_instruction()
+            if not cont:
+                break
         self.state_controller = None
 
     def get_state(self) -> TreeType:
         return {
             "state": self.state,
             "stack": self.interp.stack,
-            "pc": self.pc,
+            "pc": self.interp.pc,
             "_name": self._name,
         }
 
@@ -82,17 +76,19 @@ class ASTProcess(Process):
         assert isinstance(state, dict)
         self.state = state["state"]
         self.interp.stack = state["stack"]
-        self.pc = state["pc"]
+        self.interp.pc = state["pc"]
         self._name = state["_name"]
 
     def call_function(self, name, args):
         print(f"TODO: Calling {name} with {args}")
-        pass
 
-    def hit_yield(self, val):
+    def on_yield(self, val):
         self._name = val
 
-    def resolve_var(self, varname):
+    def store_fast(self, name, val):
+        self.state[name] = val
+
+    def resolve_var(self, varname: str):
         if varname in self.state:
             return self.state[varname]
         if varname in self.binds:
@@ -117,16 +113,11 @@ class ASTProcess(Process):
         model_name = base[len(MODEL_PREFIX) :]
         return self.state_controller.tree[model_name]
 
-    def find_pc_for_offset(self, offset):
-        for i, x in enumerate(self.instructions):
-            if x.offset == offset:
-                return i
-
     def debug_print(self):
         import pprint
 
         print("\n\nState:\n")
         pprint.pprint(self.state)
         print("\nInstructions:\n")
-        _print_list(self.instructions, self.pc)
+        _print_list(self.interp.instructions, self.interp.pc)
         print("\n\n")
