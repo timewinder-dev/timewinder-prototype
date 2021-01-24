@@ -51,6 +51,11 @@ class Interpreter:
     def interpret_instruction(self):
         return self.ops.interpret_instruction()
 
+    def get_yield(self):
+        y = self.yielded
+        self.yielded = None
+        return y
+
     def on_yield(self, val):
         self.yielded = val
 

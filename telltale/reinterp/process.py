@@ -37,8 +37,10 @@ class BytecodeProcess(Process):
             cont = self.interp.interpret_instruction()
             if not cont:
                 break
-        if self.interp.yielded is not None:
-            self._name = self.interp.yielded
+
+        y = self.interp.get_yield()
+        if y is not None:
+            self._name = y
         self.interp.state_controller = None
 
     def get_state(self) -> TreeType:
