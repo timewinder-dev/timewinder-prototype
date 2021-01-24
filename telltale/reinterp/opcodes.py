@@ -6,11 +6,11 @@ from typing import List
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .bytecode import OpcodeStoreInterface
+    from .interpreter import Interpreter
 
 
 class OpcodeInterpreter:
-    def __init__(self, proc: "OpcodeStoreInterface", instructions):
+    def __init__(self, proc: "Interpreter", instructions):
         self.proc = proc
         self.stack: List[Any] = []
         self.instructions: List[dis.Instruction] = instructions
