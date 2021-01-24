@@ -2,7 +2,7 @@ import telltale
 import pytest
 
 from telltale.generators import Set
-from telltale.constraints import ConstraintError
+from telltale.predicate import ConstraintError
 
 
 def test_overdraft_1():

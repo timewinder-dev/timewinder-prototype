@@ -3,7 +3,7 @@ import pytest
 
 from telltale.reinterp import interp
 from telltale.generators import Set
-from telltale.constraints import ConstraintError
+from telltale.predicate import ConstraintError
 
 
 @telltale.model

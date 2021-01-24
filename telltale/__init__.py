@@ -6,4 +6,4 @@ from .evaluation import Evaluator
 from .process import step
 from .process import FuncProcess
 from .process import StopProcess
-from .constraints import ForAll
+from .predicate import ForAll

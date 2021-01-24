@@ -13,7 +13,7 @@ from .process import Process
 from .process import BoundStep
 from .process import FuncProcess
 
-from .constraints import ConstraintError
+from .predicate import ConstraintError
 
 
 @dataclass
