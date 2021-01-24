@@ -8,3 +8,14 @@ class A:
 
     def __repr__(self):
         return "A: " + self.foo
+
+
+class MockPredicate(telltale.predicate.Predicate):
+    def __init__(self, index):
+        self.index = index
+
+    def check(self, sc) -> bool:
+        raise NotImplementedError()
+
+    def name(self) -> str:
+        return "Mock"

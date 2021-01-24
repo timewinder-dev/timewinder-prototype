@@ -10,9 +10,15 @@ from typing import TYPE_CHECKING
 from varname import varname
 
 from .model import ObjectModel
+from .closure import Closure
 
 if TYPE_CHECKING:
     from telltale.statetree import StateController
+
+
+def predicate(f):
+    """Decorator representing a boolean check"""
+    return Closure(f, FuncPredicate)
 
 
 class Predicate(ABC):
@@ -31,7 +37,7 @@ class Predicate(ABC):
         self.index = i
 
     def eval_traces(self, traces) -> List[bool]:
-        return traces[self.index].traces
+        return traces[self.index].trace
 
 
 class FuncPredicate(Predicate):
