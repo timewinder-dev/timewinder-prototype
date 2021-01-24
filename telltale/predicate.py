@@ -3,6 +3,7 @@ from abc import abstractmethod
 from abc import abstractproperty
 
 from typing import Callable
+from typing import List
 from typing import Optional
 from typing import TYPE_CHECKING
 
@@ -22,6 +23,15 @@ class Predicate(ABC):
     @abstractproperty
     def name(self) -> str:
         pass
+
+    def get_index(self):
+        return getattr(self, "index", None)
+
+    def set_index(self, i):
+        self.index = i
+
+    def eval_traces(self, traces) -> List[bool]:
+        return traces[self.index].traces
 
 
 class FuncPredicate(Predicate):

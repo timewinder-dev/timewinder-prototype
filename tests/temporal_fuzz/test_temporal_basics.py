@@ -1,9 +1,27 @@
+import pytest
 from hypothesis import given, assume, settings
-from hypothesis.strategies import lists, booleans
+from hypothesis.strategies import lists, booleans, integers, tuples
+from random import randint
+
+from telltale.ltl import eventually
+from telltale.ltl import always
+from telltale.ltl import inverse
+from telltale.ltl import leads_to
 
 from typing import List
 
 TTrace = List[bool]
+
+
+def generate_trace(length: int) -> TTrace:
+    out = []
+    for i in range(length):
+        x = randint(0, 1)
+        if x == 0:
+            out.append(True)
+        else:
+            out.append(False)
+    return out
 
 
 def to_bool(l: TTrace) -> bool:
@@ -14,20 +32,8 @@ def always_bool(l: TTrace) -> bool:
     return all(l)
 
 
-def always(l: TTrace) -> TTrace:
-    if len(l) == 0:
-        return []
-    return [all(l)] + always(l[1:])
-
-
 def eventually_bool(l: TTrace) -> bool:
     return any(l)
-
-
-def eventually(l: TTrace) -> TTrace:
-    if len(l) == 0:
-        return []
-    return [any(l)] + eventually(l[1:])
 
 
 def eventuallyAlways_bool(l: TTrace) -> bool:
@@ -52,10 +58,6 @@ def alwaysEventually_bool(l: TTrace) -> bool:
         return eventually_bool(l[1:]) and alwaysEventually_bool(l[1:])
 
 
-def inverse(l: TTrace) -> TTrace:
-    return [not x for x in l]
-
-
 def leadsTo_bool(p, q: TTrace) -> bool:
     assert len(p) == len(q)
     if len(p) == 0:
@@ -67,10 +69,6 @@ def leadsTo_bool(p, q: TTrace) -> bool:
             return eventually_bool(q[1:]) and leadsTo_bool(p[1:], q[1:])
     else:
         return leadsTo_bool(p[1:], q[1:])
-
-
-def leadsTo(p, q: TTrace) -> TTrace:
-    pass
 
 
 @given(lists(booleans()))
@@ -92,13 +90,37 @@ def test_eventually(l):
 
 
 @given(lists(booleans()))
-@settings(max_examples=2000)
+@settings(max_examples=500)
 def test_eventually_not_always_not(p):
     assert eventually(p) == inverse(always(inverse(p)))
 
 
 @given(lists(booleans()))
-@settings(max_examples=2000)
+@settings(max_examples=500)
 def test_leads_to_equivalence(p):
     assume(len(p) > 0)
     assert leadsTo_bool(inverse(p), p) == to_bool(always(eventually(p)))
+    assert leads_to(inverse(p), p) == always(eventually(p))
+
+
+def matching_lists(min, max=20):
+    return integers(min_value=min, max_value=max).flatmap(
+        lambda n: tuples(
+            lists(booleans(), min_size=n, max_size=n),
+            lists(booleans(), min_size=n, max_size=n),
+        )
+    )
+
+
+@given(matching_lists(1))
+@settings(max_examples=500)
+def test_leads_to_def(ls):
+    p, q = ls
+    assert to_bool(leads_to(p, q)) == leadsTo_bool(p, q)
+
+
+@pytest.mark.benchmark(group="ltl_microbenchmark")
+def test_leads_to_bm(benchmark):
+    p = generate_trace(100)
+    q = generate_trace(100)
+    benchmark(leads_to, p, q)

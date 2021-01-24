@@ -2,13 +2,13 @@ from typing import List
 from typing import Set
 
 from copy import copy
-from copy import deepcopy
 from dataclasses import dataclass
 
 from telltale.statetree import StateController
 from telltale.statetree import MemoryCAS
 from telltale.statetree import Hash
 
+from .ltl import TTrace
 from .process import Process
 from .process import Step
 from .process import FuncProcess
@@ -25,14 +25,11 @@ class EvaluatorStats:
     final_states: int = 0
 
 
-PredicateTrace = List[bool]
-
-
 @dataclass
 class EvalThunk:
     trace: List[int]
     hashes: List[Hash]
-    predicate_traces: List[PredicateTrace]
+    predicate_traces: List[TTrace]
 
     def state_hash(self) -> Hash:
         return self.hashes[-1]
@@ -44,7 +41,7 @@ class EvalThunk:
         return EvalThunk(
             trace=self.trace[:],
             hashes=self.hashes[:],
-            predicate_traces=deepcopy(self.predicate_traces),
+            predicate_traces=[x.clone() for x in self.predicate_traces],
         )
 
 
