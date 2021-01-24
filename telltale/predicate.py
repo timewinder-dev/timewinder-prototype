@@ -3,18 +3,20 @@ from abc import abstractmethod
 from abc import abstractproperty
 
 from typing import Callable
-from typing import List
 from typing import Optional
+from typing import TYPE_CHECKING
 
 from varname import varname
 
-from .model import Model
 from .model import ObjectModel
+
+if TYPE_CHECKING:
+    from telltale.statetree import StateController
 
 
 class Predicate(ABC):
     @abstractmethod
-    def check(self, models: List[Model]) -> bool:
+    def check(self, sc: "StateController") -> bool:
         pass
 
     @abstractproperty
@@ -28,8 +30,8 @@ class FuncPredicate(Predicate):
         self.kwargs = kwargs
         self.func = func
 
-    def check(self, models: List[Model]) -> bool:
-        # models is ignored, as the binding for a python predicate
+    def check(self, sc: "StateController") -> bool:
+        # sc is ignored, as the binding for a python predicate
         # is already in args/kwargs
         v = self.func(*self.args, **self.kwargs)
         if not isinstance(v, bool):
@@ -49,7 +51,8 @@ class ForAll(Predicate):
     def name(self) -> str:
         return self._name
 
-    def check(self, models: List[Model]) -> bool:
+    def check(self, sc: "StateController") -> bool:
+        models = sc.get_model_list()
         for m in models:
             if not isinstance(m, ObjectModel):
                 continue

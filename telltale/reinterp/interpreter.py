@@ -51,6 +51,10 @@ class Interpreter:
     def on_yield(self, val):
         self.yielded = val
 
+    def on_return(self, val):
+        self.done = True
+        self.return_val = val
+
     def store_fast(self, name, val):
         self.state[name] = val
 

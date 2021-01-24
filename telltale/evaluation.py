@@ -97,9 +97,8 @@ class Evaluator:
                 next_queue.extend(new_runs)
 
     def _check_constraints(self, t: EvalThunk):
-        models = self.state_controller.get_model_list()
         for spec in self.specs:
-            ok = spec.check(models)
+            ok = spec.check(self.state_controller)
             if not ok:
                 err = ConstraintError(spec.name)
                 err.thunk = t

@@ -136,6 +136,7 @@ class OpcodeInterpreter:
 
     def exec_return_value(self, inst):
         self.pc = -1
+        self.proc.on_return(self.pop_stack())
         return False
 
     def exec_yield_value(self, inst):
