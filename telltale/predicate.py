@@ -39,6 +39,9 @@ class Predicate(ABC):
     def eval_traces(self, traces) -> List[bool]:
         return traces[self.index].trace
 
+    def is_liveness(self) -> bool:
+        return False
+
 
 class FuncPredicate(Predicate):
     def __init__(self, func, args, kwargs):
@@ -53,6 +56,9 @@ class FuncPredicate(Predicate):
         if not isinstance(v, bool):
             raise TypeError("All predicate functions must return a boolean")
         return v
+
+    def __repr__(self) -> str:
+        return self.func.__name__
 
 
 class ForAll(Predicate):
@@ -79,6 +85,9 @@ class ForAll(Predicate):
             if not ok:
                 return False
         return True
+
+    def __repr__(self) -> str:
+        return "ForAll(%s)" % self.pred.__name__
 
 
 class ConstraintError(BaseException):

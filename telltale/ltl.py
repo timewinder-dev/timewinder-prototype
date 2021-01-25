@@ -74,6 +74,10 @@ class LTLOp(ABC):
     def eval_traces(self, traces: List[TTrace]) -> List[bool]:
         pass
 
+    @abstractmethod
+    def is_liveness(self) -> bool:
+        pass
+
 
 class LTLBinOp(LTLOp):
     def __init__(self, pred: "LTLExpression", pred2: "LTLExpression"):
@@ -104,10 +108,6 @@ class LTLBinOp(LTLOp):
 
         return a + b
 
-    @abstractmethod
-    def eval_traces(self, traces: List[TTrace]) -> List[bool]:
-        pass
-
 
 LTLExpression = Union[LTLOp, Predicate]
 
@@ -118,12 +118,24 @@ class Eventually(LTLOp):
     def eval_traces(self, traces: List[TTrace]) -> List[bool]:
         return eventually(self.pred.eval_traces(traces))
 
+    def is_liveness(self) -> bool:
+        return True
+
+    def __repr__(self) -> str:
+        return "<>(%s)" % str(self.pred)
+
 
 class Always(LTLOp):
     _tree_key = "always"
 
     def eval_traces(self, traces: List[TTrace]) -> List[bool]:
         return always(self.pred.eval_traces(traces))
+
+    def is_liveness(self) -> bool:
+        return self.pred.is_liveness()
+
+    def __repr__(self) -> str:
+        return "[](%s)" % str(self.pred)
 
 
 class Not(LTLOp):
@@ -132,9 +144,21 @@ class Not(LTLOp):
     def eval_traces(self, traces: List[TTrace]) -> List[bool]:
         return inverse(self.pred.eval_traces(traces))
 
+    def is_liveness(self) -> bool:
+        return self.pred.is_liveness()
+
+    def __repr__(self) -> str:
+        return "!(%s)" % str(self.pred)
+
 
 class LeadsTo(LTLBinOp):
     _tree_key = "leads_to"
 
     def eval_traces(self, traces: List[TTrace]) -> List[bool]:
         return leads_to(self.pred.eval_traces(traces), self.pred2.eval_traces(traces))
+
+    def is_liveness(self) -> bool:
+        return True
+
+    def __repr__(self) -> str:
+        return "(%s) ~> (%s)" % (str(self.pred), str(self.pred2))

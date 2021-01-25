@@ -7,3 +7,4 @@ from .process import step
 from .process import FuncProcess
 from .process import StopProcess
 from .predicate import ForAll
+from .predicate import predicate

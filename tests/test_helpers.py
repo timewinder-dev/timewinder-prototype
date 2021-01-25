@@ -1,4 +1,5 @@
 import telltale
+from telltale.predicate import Predicate
 
 
 @telltale.model
@@ -10,7 +11,7 @@ class A:
         return "A: " + self.foo
 
 
-class MockPredicate(telltale.predicate.Predicate):
+class MockPredicate(Predicate):
     def __init__(self, index):
         self.index = index
 
