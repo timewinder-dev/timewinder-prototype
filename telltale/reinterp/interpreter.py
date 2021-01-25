@@ -1,4 +1,6 @@
 import dis
+import sys
+from dataclasses import dataclass
 
 from telltale.model import Model
 
@@ -55,8 +57,14 @@ class Interpreter:
         self.done = True
         self.return_val = val
 
-    def store_fast(self, name, val):
+    def on_store_fast(self, name, val):
         self.state[name] = val
+
+    def on_call_function(self, func, args):
+        if isinstance(func, TagStub):
+            raise NotImplementedError()
+        else:
+            return func(*args)
 
     def resolve_var(self, varname: str):
         if varname in self.state:
@@ -72,9 +80,6 @@ class Interpreter:
     @property
     def instructions(self) -> List:
         return self.ops.instructions
-
-    def call_function(self, name, args):
-        print(f"TODO: Calling {name} with {args}")
 
     def resolve_getattr(self, base, attr):
         if isinstance(base, str):
@@ -103,6 +108,22 @@ class Interpreter:
         print("\nInstructions:\n")
         _print_list(self.ops.instructions, self.ops.pc)
         print("\n\n")
+
+    def resolve_global(self, name):
+        func_mod = sys.modules[self.func.__module__]
+        g = getattr(func_mod, name, None)
+        if g is None:
+            g = func_mod.__builtins__[name]
+        tag = getattr(g, "__telltale_tag", None)
+        if tag is None:
+            return g
+        return TagStub(tag, self.pc)
+
+
+@dataclass
+class TagStub:
+    tag: str
+    pc: int
 
 
 def _print_list(l, highlight):

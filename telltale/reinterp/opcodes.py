@@ -57,14 +57,15 @@ class OpcodeInterpreter:
         self.push_stack(self.proc.resolve_var(inst.argval))
 
     def exec_load_global(self, inst):
-        self.push_stack(inst.argval)
+        val = self.proc.resolve_global(inst.argval)
+        self.push_stack(val)
 
     def exec_load_attr(self, inst):
         val = self.proc.resolve_getattr(self.pop_stack(), inst.argval)
         self.push_stack(val)
 
     def exec_store_fast(self, inst):
-        self.proc.store_fast(inst.argval, self.pop_stack())
+        self.proc.on_store_fast(inst.argval, self.pop_stack())
 
     def exec_store_attr(self, inst):
         tos = self.pop_stack()
@@ -85,9 +86,9 @@ class OpcodeInterpreter:
         for i in range(inst.argval):
             args.append(self.pop_stack())
         args.reverse()
-        name = self.pop_stack()
+        func = self.pop_stack()
         # Delegate to the process to do the rest
-        ret = self.proc.call_function(name, args)
+        ret = self.proc.on_call_function(func, args)
         self.push_stack(ret)
 
     def exec_pop_top(self, inst):
@@ -109,7 +110,7 @@ class OpcodeInterpreter:
         tos1 = self.pop_stack()
         if inst.argval == "==":
             self.push_stack(tos1 == tos)
-        if inst.argval == "!=":
+        elif inst.argval == "!=":
             self.push_stack(tos1 != tos)
         elif inst.argval == "<":
             self.push_stack(tos1 < tos)
@@ -120,7 +121,8 @@ class OpcodeInterpreter:
         elif inst.argval == ">=":
             self.push_stack(tos1 >= tos)
         else:
-            assert False, "unknown operator"
+            self.proc.debug_print()
+            assert False, f"unknown operator {inst.argval}"
 
     def exec_pop_jump_if_false(self, inst):
         if not self.pop_stack():

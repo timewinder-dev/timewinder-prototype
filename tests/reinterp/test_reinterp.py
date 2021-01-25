@@ -1,5 +1,6 @@
 from telltale.reinterp.process import BytecodeProcess
 from telltale.closure import Closure
+from telltale.functions import Await
 
 
 def bytecodeClosure(func):
@@ -48,11 +49,17 @@ def test_interesting_assign():
 
 
 def test_await_func():
-    def f(x):
-        wait(x == 2)
+    def f(l):
+        Await(len(l) == 1)
+        l.append(2)
+
+    l = []
     a = bytecodeClosure(f)
-    proc = a(2)
-    proc.interp.debug_print()
+    proc = a(l)
+    proc.execute(None)
+    proc.execute(None)
+    proc.execute(None)
+
 
 
 def test_yield():
