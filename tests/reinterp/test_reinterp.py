@@ -47,6 +47,14 @@ def test_interesting_assign():
     proc.execute(None)
 
 
+def test_await_func():
+    def f(x):
+        wait(x == 2)
+    a = bytecodeClosure(f)
+    proc = a(2)
+    proc.interp.debug_print()
+
+
 def test_yield():
     def f(acc):
         yield "Step 1"

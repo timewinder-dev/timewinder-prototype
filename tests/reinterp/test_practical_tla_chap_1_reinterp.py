@@ -3,7 +3,8 @@ import pytest
 
 from telltale.reinterp import interp
 from telltale.generators import Set
-from telltale.predicate import ConstraintError
+from telltale.evaluation import ConstraintError
+from telltale.evaluation import StutterConstraintError
 
 
 @telltale.model
@@ -94,3 +95,49 @@ def test_check_and_withdraw_reinterp(benchmark):
     stats = benchmark(reset_and_eval)
 
     assert stats.states == 225
+
+
+@pytest.mark.benchmark(group="practical_tla_1")
+def test_liveness_reinterp(benchmark):
+    @interp
+    def check_and_withdraw(sender, reciever, amt):
+        if amt <= sender.acc:
+            sender.acc = sender.acc - amt
+            yield "deposit"
+            reciever.acc = reciever.acc + amt
+
+    no_overdrafts = telltale.ForAll(Account, lambda a: a.acc >= 0)
+
+    @telltale.predicate
+    def consistent_total(a, b):
+        total = a.acc + b.acc
+        return total == 10
+
+    alice = Account("alice", 5)
+    bob = Account("bob", 5)
+
+    eventually_consistent = telltale.Eventually(
+        telltale.Always(consistent_total(alice, bob))
+    )
+
+    ev = telltale.Evaluator(
+        models=[alice, bob],
+        threads=[
+            check_and_withdraw(alice, bob, Set(range(1, 6))),
+            check_and_withdraw(alice, bob, Set(range(1, 6))),
+        ],
+        specs=[
+            no_overdrafts,
+            eventually_consistent,
+        ],
+    )
+
+    got_error = False
+    try:
+        ev.evaluate(steps=10)
+    except StutterConstraintError as s:
+        got_error = True
+        print("\n" + s.name + "\n")
+        ev.replay_thunk(s.thunk)
+
+    assert got_error

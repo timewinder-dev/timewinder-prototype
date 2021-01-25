@@ -109,7 +109,3 @@ def _print_list(l, highlight):
     highlights = ["   "] * len(l)
     highlights[highlight] = "-> "
     print("\n".join(["%s%s" % x for x in zip(highlights, l)]))
-
-    highlights = ["   "] * len(l)
-    highlights[highlight] = "-> "
-    print("\n".join(["%s%s" % x for x in zip(highlights, l)]))

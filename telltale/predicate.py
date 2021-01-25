@@ -57,6 +57,10 @@ class FuncPredicate(Predicate):
             raise TypeError("All predicate functions must return a boolean")
         return v
 
+    @property
+    def name(self) -> str:
+        return self.func.__name__
+
     def __repr__(self) -> str:
         return self.func.__name__
 
@@ -88,10 +92,3 @@ class ForAll(Predicate):
 
     def __repr__(self) -> str:
         return "ForAll(%s)" % self.pred.__name__
-
-
-class ConstraintError(BaseException):
-    def __init__(self, name, thunk=None):
-        self.name = name
-        self.thunk = thunk
-        self.state = None

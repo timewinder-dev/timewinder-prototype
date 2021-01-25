@@ -17,7 +17,6 @@ from .process import Process
 from .process import Step
 from .process import FuncProcess
 
-from .predicate import ConstraintError
 from .predicate import Predicate
 from .predicate import predicate
 
@@ -131,16 +130,35 @@ class Evaluator:
             b = p.check(self.state_controller)
             t.predicate_traces[i].append(b)
 
-    def _check_constraints(self, t: EvalThunk):
-        for spec in self.specs:
-            # TODO: check for stutter
+    def _should_stutter(self) -> bool:
+        # TODO: Fairness, etc.
+        return True
+
+    def _check_liveness(self, spec, t: EvalThunk):
+        if self._should_stutter():
             trace = spec.eval_traces(t.predicate_traces)
             ok = trace[0]
             if not ok:
-                err = ConstraintError(str(spec))
+                err = StutterConstraintError(str(spec))
                 err.thunk = t
                 err.state = self.state_controller.tree
                 raise err
+
+    def _check_safety(self, spec, t: EvalThunk):
+        trace = spec.eval_traces(t.predicate_traces)
+        ok = trace[0]
+        if not ok:
+            err = StutterConstraintError(str(spec))
+            err.thunk = t
+            err.state = self.state_controller.tree
+            raise err
+
+    def _check_constraints(self, t: EvalThunk):
+        for spec in self.specs:
+            if spec.is_liveness():
+                self._check_liveness(spec, t)
+            else:
+                self._check_safety(spec, t)
 
     def _eval_state(self, t: EvalThunk) -> List[EvalThunk]:
         if t.state_hash().bytes in self._evaled_states:
@@ -199,3 +217,14 @@ class Evaluator:
         s = copy(self._stats)
         s.cas_objects = self.state_controller.cas.size()
         return s
+
+
+class ConstraintError(BaseException):
+    def __init__(self, name, thunk=None):
+        self.name = name
+        self.thunk = thunk
+        self.state = None
+
+
+class StutterConstraintError(ConstraintError):
+    pass

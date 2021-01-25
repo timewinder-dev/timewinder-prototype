@@ -8,3 +8,5 @@ from .process import FuncProcess
 from .process import StopProcess
 from .predicate import ForAll
 from .predicate import predicate
+from .ltl import Always
+from .ltl import Eventually
