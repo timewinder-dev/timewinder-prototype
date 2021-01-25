@@ -1,3 +1,5 @@
+import pytest
+
 from telltale.reinterp.process import BytecodeProcess
 from telltale.closure import Closure
 from telltale.functions import Await
@@ -48,6 +50,7 @@ def test_interesting_assign():
     proc.execute(None)
 
 
+@pytest.mark.skip(reason="Await WIP")
 def test_await_func():
     def f(l):
         Await(len(l) == 1)
@@ -59,7 +62,6 @@ def test_await_func():
     proc.execute(None)
     proc.execute(None)
     proc.execute(None)
-
 
 
 def test_yield():

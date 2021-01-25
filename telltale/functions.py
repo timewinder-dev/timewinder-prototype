@@ -13,6 +13,7 @@ def add_abi_tag(tag: str):
     def wrapper(func):
         func.__telltale_tag = tag
         return func
+
     return wrapper
 
 
