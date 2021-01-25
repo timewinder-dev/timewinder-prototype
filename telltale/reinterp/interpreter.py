@@ -1,5 +1,6 @@
 import dis
 import sys
+import inspect
 from dataclasses import dataclass
 
 from telltale.model import Model
@@ -66,12 +67,29 @@ class Interpreter:
         else:
             return func(*args)
 
-    def resolve_var(self, varname: str):
+    def on_load_method(self, obj, name):
+        method = getattr(obj, name)
+        is_bound = False
+        if inspect.isbuiltin(method):
+            is_bound = True
+        if inspect.ismethod(method):
+            is_bound = True
+        return (is_bound, method)
+
+
+    def resolve_var_by_name(self, varname: str):
         if varname in self.state:
             return self.state[varname]
         if varname in self.binds:
             return self.binds[varname]
         raise LookupError(f"Couldn't find variable {varname}")
+
+    def resolve_var(self, var):
+        if isinstance(var, str):
+            if var.startswith(MODEL_PREFIX):
+                model = self._get_from_tree(var)
+                return model
+        return var
 
     @property
     def pc(self) -> int:

@@ -1,4 +1,5 @@
 from telltale.process import Process
+from telltale.process import ProcessException
 from telltale.statetree import TreeType
 
 from .interpreter import Interpreter
@@ -23,7 +24,10 @@ class BytecodeProcess(Process):
     def execute(self, state_controller):
         self.interp.state_controller = state_controller
         while self.interp.pc < len(self.interp.instructions):
-            cont = self.interp.interpret_instruction()
+            try:
+                cont = self.interp.interpret_instruction()
+            except Exception as e:
+                raise ProcessException(f"{self.name}@{self.interp.pc}", e)
             if not cont:
                 break
 
@@ -46,3 +50,6 @@ class BytecodeProcess(Process):
         self.interp.ops.stack = state["stack"]
         self.interp.ops.pc = state["pc"]
         self._name = state["_name"]
+
+    def __repr__(self) -> str:
+        return f"{self._name}@{self.interp.ops.pc}: {self.interp.state}"

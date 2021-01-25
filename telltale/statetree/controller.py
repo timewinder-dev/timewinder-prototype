@@ -40,6 +40,12 @@ class StateController:
         for k, v in restored.items():
             self.tree[k].set_state(v)
 
+    def state_to_str(self):
+        out = ""
+        for k, m in self.tree.items():
+            out += f"{k}:\n\t{m}\n"
+        return out
+
 
 def flatten_to_cas(tree: Union[dict, list], cas: CAS) -> Iterable[Hash]:
     non_flats = non_flat_keys(tree)

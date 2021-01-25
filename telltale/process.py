@@ -80,3 +80,12 @@ class FuncProcess(Process):
     def __repr__(self) -> str:
         funcs = ",".join([s.func.__name__ for s in self.steps])
         return f"FuncProcess([{funcs}])@{self.pc}:{self.state}"
+
+
+class ProcessException(BaseException):
+    def __init__(self, info, wrapped):
+        self.info = info
+        self.wrapped = wrapped
+
+    def __repr__(self):
+        return f"{self.info} caught an exception: {self.wrapped}"

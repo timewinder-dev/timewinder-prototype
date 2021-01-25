@@ -17,6 +17,8 @@ class OpcodeInterpreter:
         self.pc = 0
 
     def push_stack(self, v: Any):
+        # As a debugging strategy, find when an unusual value is pushed on the
+        # stack and start a breakpoint, right here.
         self.stack.append(v)
 
     def pop_stack(self) -> Any:
@@ -54,7 +56,7 @@ class OpcodeInterpreter:
         self.push_stack(inst.argval)
 
     def exec_load_fast(self, inst):
-        self.push_stack(self.proc.resolve_var(inst.argval))
+        self.push_stack(self.proc.resolve_var_by_name(inst.argval))
 
     def exec_load_global(self, inst):
         val = self.proc.resolve_global(inst.argval)
@@ -63,6 +65,16 @@ class OpcodeInterpreter:
     def exec_load_attr(self, inst):
         val = self.proc.resolve_getattr(self.pop_stack(), inst.argval)
         self.push_stack(val)
+
+    def exec_load_method(self, inst):
+        tos = self.pop_stack()
+        bound, method = self.proc.on_load_method(tos, inst.argval)
+        if bound:
+            self.push_stack(None)
+            self.push_stack(method)
+        else:
+            self.push_stack(method)
+            self.push_stack(tos)
 
     def exec_store_fast(self, inst):
         self.proc.on_store_fast(inst.argval, self.pop_stack())
@@ -75,11 +87,47 @@ class OpcodeInterpreter:
     def exec_nop(self, inst):
         pass
 
+    def exec_dup_top(self, inst):
+        tos = self.pop_stack()
+        self.push_stack(tos)
+        self.push_stack(tos)
+
     def exec_store_subscr(self, inst):
         tos = self.pop_stack()
         tos1 = self.pop_stack()
         tos2 = self.pop_stack()
         tos1[tos] = tos2
+
+    def exec_binary_subscr(self, inst):
+        tos = self.pop_stack()
+        tos1 = self.pop_stack()
+        v = self.proc.resolve_var(tos1)
+        self.push_stack(v[tos])
+
+    def exec_build_slice(self, inst):
+        tos = self.pop_stack()
+        tos1 = self.pop_stack()
+        if inst.argval == 2:
+            self.push_stack(slice(tos1, tos))
+        elif inst.argval == 3:
+            tos2 = self.pop_stack()
+            self.push_stack(slice(tos2, tos1, tos))
+        else:
+            assert False, "instruction has invalid argval"
+
+    def exec_call_method(self, inst):
+        args = []
+        for i in range(inst.argval):
+            args.append(self.pop_stack())
+        args.reverse()
+        tos = self.pop_stack()
+        tos1 = self.pop_stack()
+        if tos1 is None:
+            ret = self.proc.on_call_function(tos, args)
+        else:
+            args.insert(0, tos)
+            ret = self.proc.on_call_function(tos1, args)
+        self.push_stack(ret)
 
     def exec_call_function(self, inst):
         args = []
@@ -94,10 +142,19 @@ class OpcodeInterpreter:
     def exec_pop_top(self, inst):
         self.pop_stack()
 
+    def exec_rot_two(self, inst):
+        tos = self.pop_stack()
+        tos1 = self.pop_stack()
+        self.push_stack(tos)
+        self.push_stack(tos1)
+
     def exec_binary_add(self, inst):
         self._exec_binop(inst, operator.add)
 
     def exec_binary_subtract(self, inst):
+        self._exec_binop(inst, operator.sub)
+
+    def exec_inplace_subtract(self, inst):
         self._exec_binop(inst, operator.sub)
 
     def _exec_binop(self, inst, op):
@@ -135,6 +192,10 @@ class OpcodeInterpreter:
             self.pc = self.find_pc_for_offset(inst.argval)
             return True
         return None
+
+    def exec_jump_absolute(self, inst):
+        self.pc = self.find_pc_for_offset(inst.argval)
+        return True
 
     def exec_return_value(self, inst):
         self.pc = -1

@@ -1,5 +1,6 @@
 from typing import List
 from typing import Set
+from typing import Optional
 
 from copy import copy
 from dataclasses import dataclass
@@ -33,6 +34,9 @@ class EvaluatorStats:
 @dataclass
 class EvalThunk:
     trace: List[int]
+    # hashes is one longer than trace.
+    # it's roughly a graph with edges
+    # hashes[n] --trace[n]--> hashes[n + 1]
     hashes: List[Hash]
     predicate_traces: List[TTrace]
 
@@ -103,7 +107,7 @@ class Evaluator:
         for i, p in enumerate(self.preds):
             p.set_index(i)
 
-    def evaluate(self, steps: int = 5):
+    def evaluate(self, steps: Optional[int] = 5):
         self._initialize_evaluation()
         initial_hashes = self.state_controller.commit()
         next_queue = []
@@ -113,6 +117,8 @@ class Evaluator:
                 EvalThunk(trace=[], hashes=[h], predicate_traces=pred_traces)
             )
 
+        if steps is None:
+            steps = 2**30
         for step in range(1, steps + 1):
             state_queue = next_queue
             next_queue = []
@@ -199,15 +205,20 @@ class Evaluator:
         return out
 
     def replay_thunk(self, t: EvalThunk):
+        print("Initial State:")
         self.state_controller.restore(t.initial_hash())
-        print(self.state_controller.tree)
+        print(self.state_controller.state_to_str())
+        prev_hash = t.initial_hash()
         step = 0
-        for i in t.trace:
+        for tid, hash in zip(t.trace, t.hashes[1:]):
             step += 1
-            print("Step %d" % step)
-            self._execute_threads([i], t)
-            print("Post-step-%d-state: " % step)
-            print(self.state_controller.tree)
+            print(f"Step {step}, thread {tid} executes")
+            print(f"{prev_hash.hex()[:7]} -- {tid} --> {hash.hex()[:7]}")
+            print("*" * 26)
+            print("State: ")
+            self.state_controller.restore(hash)
+            print(self.state_controller.state_to_str())
+            prev_hash = hash
 
     def _print_state_space(self):
         self.state_controller.cas.debug_print()
