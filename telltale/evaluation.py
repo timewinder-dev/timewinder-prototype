@@ -118,7 +118,7 @@ class Evaluator:
             )
 
         if steps is None:
-            steps = 2**30
+            steps = 2 ** 30
         for step in range(1, steps + 1):
             state_queue = next_queue
             next_queue = []

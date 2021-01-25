@@ -97,8 +97,7 @@ def test_check_and_withdraw_reinterp(benchmark):
     assert stats.states == 225
 
 
-@pytest.mark.benchmark(group="practical_tla_1")
-def test_liveness_reinterp(benchmark):
+def test_liveness_reinterp():
     @interp
     def check_and_withdraw(sender, reciever, amt):
         if amt <= sender.acc:

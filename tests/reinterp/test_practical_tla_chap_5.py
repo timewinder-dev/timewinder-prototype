@@ -118,7 +118,7 @@ def test_emulate_await_p2():
 
 
 def test_transmit_extension():
-    q = Queue(140)
+    q = Queue(40)
     max_queue_length = 7
 
     @telltale.process
@@ -142,7 +142,9 @@ def test_transmit_extension():
     ev = telltale.Evaluator(
         models=[q],
         threads=[writer(q, max_queue_length), reader(q)],
-        specs=[bounded_queue(q, max_queue_length)],
+        specs=[
+            bounded_queue(q, max_queue_length),
+        ],
     )
 
     try:
@@ -150,6 +152,6 @@ def test_transmit_extension():
     except telltale.ConstraintError as e:
         print(e.name)
         ev.replay_thunk(e.thunk)
-        assert False
+        raise e
 
-    assert ev.stats.states == 2055
+    assert ev.stats.states == 555

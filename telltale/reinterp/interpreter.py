@@ -76,7 +76,6 @@ class Interpreter:
             is_bound = True
         return (is_bound, method)
 
-
     def resolve_var_by_name(self, varname: str):
         if varname in self.state:
             return self.state[varname]
