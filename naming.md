@@ -1,3 +1,6 @@
 * telltale
+  * Describes what a trace is
 * talax
-* talaxian
+  * Planet/race from Voyager
+  * talaxian
+  * neelix
