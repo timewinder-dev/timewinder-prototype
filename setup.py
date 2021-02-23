@@ -14,14 +14,15 @@ setuptools.setup(
     url="https://github.com/barakmich/telltale",
     packages=setuptools.find_packages(),
     classifiers=[
-        "License :: OSI Approved :: MIT License",
-        "Development Status :: 1 - Planning",
-        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+        "Development Status :: 3 - Alpha",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
     ],
     install_requires=[
         "dataclasses",
         "msgpack",
         "varname",
     ],
-    python_requires=">=3.6",
+    python_requires=">=3.8",
 )
