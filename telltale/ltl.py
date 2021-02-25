@@ -59,6 +59,7 @@ class LTLOp(ABC):
         self.pred = pred
 
     def to_ltl_tree(self):
+        """Make a JSON-able representation of LTLOps"""
         if isinstance(self.pred, Predicate):
             v = self.pred.get_index()
         else:

@@ -9,8 +9,12 @@ the important part -- looking at the function by tag allows for correct pausing 
 from typing import Iterable
 
 
+abiV1 = {}
+
+
 def add_abi_tag(tag: str):
     def wrapper(func):
+        abiV1[tag] = func
         func.__telltale_tag = tag
         return func
 
