@@ -1,7 +1,6 @@
 import telltale
 import pytest
 
-from telltale.reinterp import interp
 from telltale.generators import Set
 from telltale.evaluation import ConstraintError
 from telltale.evaluation import StutterConstraintError
@@ -18,7 +17,7 @@ def test_overdraft_1():
     alice = Account("alice", 5)
     bob = Account("bob", 5)
 
-    @interp
+    @telltale.process
     def withdraw(sender, reciever, amount):
         sender.acc = sender.acc - amount
         yield "deposit"
@@ -40,7 +39,7 @@ def test_overdraft_initial_conditions():
     alice = Account("alice", 5)
     bob = Account("bob", 5)
 
-    @interp
+    @telltale.process
     def withdraw(sender, reciever, amount):
         sender.acc = sender.acc - amount
         yield "deposit"
@@ -68,7 +67,7 @@ def test_overdraft_initial_conditions():
 
 @pytest.mark.benchmark(group="practical_tla_1")
 def test_check_and_withdraw_reinterp(benchmark):
-    @interp
+    @telltale.process
     def check_and_withdraw(sender, reciever, amt):
         if amt <= sender.acc:
             sender.acc = sender.acc - amt
@@ -98,7 +97,7 @@ def test_check_and_withdraw_reinterp(benchmark):
 
 
 def test_liveness_reinterp():
-    @interp
+    @telltale.process
     def check_and_withdraw(sender, reciever, amt):
         if amt <= sender.acc:
             sender.acc = sender.acc - amt

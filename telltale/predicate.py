@@ -4,7 +4,6 @@ from abc import abstractproperty
 
 from typing import Callable
 from typing import List
-from typing import Optional
 from typing import TYPE_CHECKING
 
 from varname import varname
@@ -66,9 +65,7 @@ class FuncPredicate(Predicate):
 
 
 class ForAll(Predicate):
-    def __init__(
-        self, model: Optional[ObjectModel], pred: Callable[[ObjectModel], bool]
-    ):
+    def __init__(self, model, pred: Callable[[ObjectModel], bool]):
         self.modeltype = model
         self.pred = pred
         self._name = varname()

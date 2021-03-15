@@ -154,7 +154,7 @@ class Evaluator:
         trace = spec.eval_traces(t.predicate_traces)
         ok = trace[0]
         if not ok:
-            err = StutterConstraintError(str(spec))
+            err = ConstraintError(str(spec))
             err.thunk = t
             err.state = self.state_controller.tree
             raise err

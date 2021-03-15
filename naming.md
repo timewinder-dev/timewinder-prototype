@@ -4,3 +4,7 @@
   * Planet/race from Voyager
   * talaxian
   * neelix
+* shetland
+* shmaltz
+* talc
+* timepath
