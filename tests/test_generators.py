@@ -1,11 +1,11 @@
-import telltale
-from telltale.statetree import StateController
-from telltale.statetree import MemoryCAS
-import telltale.generators as gens
+import timewinder
+from timewinder.statetree import StateController
+from timewinder.statetree import MemoryCAS
+import timewinder.generators as gens
 
 
 def test_cross_product_id():
-    @telltale.model
+    @timewinder.model
     class A:
         def __init__(self):
             self.a = 1
@@ -19,7 +19,7 @@ def test_cross_product_id():
 
 
 def test_cross_product_one():
-    @telltale.model
+    @timewinder.model
     class A:
         def __init__(self):
             self.a = 1
@@ -33,7 +33,7 @@ def test_cross_product_one():
 
 
 def test_cross_product_a():
-    @telltale.model
+    @timewinder.model
     class A:
         def __init__(self):
             self.a = gens.Range(0, 2)
@@ -47,7 +47,7 @@ def test_cross_product_a():
 
 
 def test_cross_product_b():
-    @telltale.model
+    @timewinder.model
     class A:
         def __init__(self):
             self.a = gens.Range(0, 2)

@@ -3,7 +3,7 @@ import sys
 import inspect
 from dataclasses import dataclass
 
-from telltale.model import Model
+from timewinder.model import Model
 
 from .opcodes import OpcodeInterpreter
 
@@ -131,7 +131,7 @@ class Interpreter:
         g = getattr(func_mod, name, None)
         if g is None:
             g = func_mod.__builtins__[name]
-        tag = getattr(g, "__telltale_tag", None)
+        tag = getattr(g, "__timewinder_tag", None)
         if tag is None:
             return g
         return TagStub(tag, self.pc)

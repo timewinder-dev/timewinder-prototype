@@ -4,14 +4,14 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="telltale",
+    name="timewinder",
     version="0.1dev0",
     author="Barak Michener",
     author_email="me@barakmich.com",
     description="Temporal logic models for Python",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/barakmich/telltale",
+    url="https://github.com/barakmich/timewinder",
     packages=setuptools.find_packages(),
     classifiers=[
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",

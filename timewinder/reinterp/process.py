@@ -1,6 +1,6 @@
-from telltale.process import Process
-from telltale.process import ProcessException
-from telltale.statetree import TreeType
+from timewinder.process import Process
+from timewinder.process import ProcessException
+from timewinder.statetree import TreeType
 
 from .interpreter import Interpreter
 

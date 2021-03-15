@@ -16,16 +16,16 @@
 
 import os
 
-import telltale
+import timewinder
 
 
 # -- Project information -----------------------------------------------------
 
-project = "telltale"
+project = "timewinder"
 copyright = "2020, Barak Michener"
 author = "Barak Michener"
-version = telltale.__version__
-release = telltale.__version__
+version = timewinder.__version__
+release = timewinder.__version__
 
 
 # -- General configuration ---------------------------------------------------
@@ -58,7 +58,7 @@ napoleon_google_docstring = False
 
 autosummary_generate = True
 
-apidoc_module_dir = os.path.dirname(telltale.__file__)
+apidoc_module_dir = os.path.dirname(timewinder.__file__)
 apidoc_output_dir = "reference"
 apidoc_separate_modules = True
 apidoc_toc_file = False

@@ -1,9 +1,9 @@
 import pytest
 import types
 
-import telltale.statetree.tree as tree
-import telltale.statetree.cas as cas
-import telltale.statetree.controller as controller
+import timewinder.statetree.tree as tree
+import timewinder.statetree.cas as cas
+import timewinder.statetree.controller as controller
 
 
 example = {

@@ -1,6 +1,6 @@
 # Release Instructions
 
-This document guides a contributor through creating a release of telltale.
+This document guides a contributor through creating a release of timewinder.
 
 ## Preflight checks
 
@@ -8,7 +8,7 @@ This document guides a contributor through creating a release of telltale.
 
 Locally you can run `tox` to check that all tests pass, and check that tests
 against all supported environments are passing also by checking qsim's
-[GitHub actions](https://github.com/barakmich/telltale/actions?query=branch%3Amaster+workflow%3Atests).
+[GitHub actions](https://github.com/barakmich/timewinder/actions?query=branch%3Amaster+workflow%3Atests).
 
 #### Verify that `AUTHORS.md` is up-to-date
 

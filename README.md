@@ -1,17 +1,17 @@
-# telltale
+# timewinder
 
-[![license](https://img.shields.io/github/license/barakmich/telltale)](https://github.com/barakmich/telltale/blob/master/LICENSE)
-[![tests](https://github.com/barakmich/telltale/workflows/tests/badge.svg)](https://github.com/barakmich/telltale/actions?query=workflow%3Atests)
-[![codecov](https://img.shields.io/codecov/c/github/barakmich/telltale)](https://codecov.io/gh/barakmich/telltale)
-[![docs](https://img.shields.io/readthedocs/telltale)](https://telltale.readthedocs.io)
-[![version](https://img.shields.io/pypi/v/telltale)](https://pypi.org/project/telltale/)
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/telltale)](https://pypi.org/project/telltale/)
+[![license](https://img.shields.io/github/license/barakmich/timewinder)](https://github.com/barakmich/timewinder/blob/master/LICENSE)
+[![tests](https://github.com/barakmich/timewinder/workflows/tests/badge.svg)](https://github.com/barakmich/timewinder/actions?query=workflow%3Atests)
+[![codecov](https://img.shields.io/codecov/c/github/barakmich/timewinder)](https://codecov.io/gh/barakmich/timewinder)
+[![docs](https://img.shields.io/readthedocs/timewinder)](https://timewinder.readthedocs.io)
+[![version](https://img.shields.io/pypi/v/timewinder)](https://pypi.org/project/timewinder/)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/timewinder)](https://pypi.org/project/timewinder/)
 
 Temporal logic models for Python
 
 ## Installation
 
-You can simply `pip install telltale`.
+You can simply `pip install timewinder`.
 
 ## Developing
 
@@ -26,7 +26,7 @@ python3 -m pip install flit tox
 Clone the repository:
 
 ```
-git clone https://github.com/barakmich/telltale
+git clone https://github.com/barakmich/timewinder
 ```
 
 ### Running the test suite

@@ -4,7 +4,7 @@ from abc import abstractproperty
 from uuid import uuid4
 from varname import varname
 
-from telltale.statetree import TreeType
+from timewinder.statetree import TreeType
 
 
 def model(cls):

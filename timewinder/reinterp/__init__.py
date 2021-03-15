@@ -1,5 +1,5 @@
 from .process import BytecodeProcess
-from telltale.closure import Closure
+from timewinder.closure import Closure
 
 
 def interp(f):

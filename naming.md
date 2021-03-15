@@ -1,4 +1,4 @@
-* telltale
+* timewinder
   * Describes what a trace is
 * talax
   * Planet/race from Voyager

@@ -1,5 +1,5 @@
 # Authors
 
-Contributors to telltale include:
+Contributors to timewinder include:
 
 + [Barak Michener](mailto:me@barakmich.com)

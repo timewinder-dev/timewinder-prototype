@@ -1,12 +1,12 @@
-import telltale
+import timewinder
 import pytest
 
-from telltale.generators import Set
-from telltale.evaluation import ConstraintError
+from timewinder.generators import Set
+from timewinder.evaluation import ConstraintError
 
 
 def test_overdraft_1():
-    @telltale.model
+    @timewinder.model
     class Account:
         def __init__(self, name):
             self.name = name
@@ -15,22 +15,22 @@ def test_overdraft_1():
     alice = Account("alice")
     bob = Account("bob")
 
-    @telltale.step
+    @timewinder.step
     def withdraw(state, sender, amount):
         sender.acc = sender.acc - amount
 
-    @telltale.step
+    @timewinder.step
     def deposit(state, reciever, amount):
         reciever.acc = reciever.acc + amount
 
-    alg = telltale.FuncProcess(
+    alg = timewinder.FuncProcess(
         withdraw(alice, 3),
         deposit(bob, 3),
     )
 
-    no_overdrafts = telltale.ForAll(Account, lambda a: a.acc >= 0)
+    no_overdrafts = timewinder.ForAll(Account, lambda a: a.acc >= 0)
 
-    ev = telltale.Evaluator(
+    ev = timewinder.Evaluator(
         models=[alice, bob],
         threads=[alg],
         specs=[no_overdrafts],
@@ -41,7 +41,7 @@ def test_overdraft_1():
 
 
 def test_overdraft_initial_conditions():
-    @telltale.model
+    @timewinder.model
     class Account:
         def __init__(self, name):
             self.name = name
@@ -50,15 +50,15 @@ def test_overdraft_initial_conditions():
     alice = Account("alice")
     bob = Account("bob")
 
-    @telltale.step
+    @timewinder.step
     def withdraw(state, sender):
         sender.acc = sender.acc - state["amt"]
 
-    @telltale.step
+    @timewinder.step
     def deposit(state, reciever):
         reciever.acc = reciever.acc + state["amt"]
 
-    alg = telltale.FuncProcess(
+    alg = timewinder.FuncProcess(
         withdraw(alice),
         deposit(bob),
         state={
@@ -66,9 +66,9 @@ def test_overdraft_initial_conditions():
         },
     )
 
-    no_overdrafts = telltale.ForAll(Account, lambda a: a.acc >= 0)
+    no_overdrafts = timewinder.ForAll(Account, lambda a: a.acc >= 0)
 
-    ev = telltale.Evaluator(
+    ev = timewinder.Evaluator(
         models=[alice, bob],
         threads=[alg],
         specs=[no_overdrafts],
@@ -87,7 +87,7 @@ def test_overdraft_initial_conditions():
 
 
 def test_multiple_processes():
-    @telltale.model
+    @timewinder.model
     class Account:
         def __init__(self, name):
             self.name = name
@@ -96,24 +96,24 @@ def test_multiple_processes():
     alice = Account("alice")
     bob = Account("bob")
 
-    @telltale.step
+    @timewinder.step
     def withdraw(state, sender):
         sender.acc = sender.acc - state["amt"]
 
-    @telltale.step
+    @timewinder.step
     def deposit(state, reciever):
         reciever.acc = reciever.acc + state["amt"]
 
     def alg():
-        return telltale.FuncProcess(
+        return timewinder.FuncProcess(
             withdraw(alice),
             deposit(bob),
             state={"amt": Set(range(1, 6))},
         )
 
-    no_overdrafts = telltale.ForAll(Account, lambda a: a.acc >= 0)
+    no_overdrafts = timewinder.ForAll(Account, lambda a: a.acc >= 0)
 
-    ev = telltale.Evaluator(
+    ev = timewinder.Evaluator(
         models=[alice, bob],
         threads=[alg(), alg()],
         specs=[no_overdrafts],
@@ -132,7 +132,7 @@ def test_multiple_processes():
 
 
 def test_multiple_processes_if():
-    @telltale.model
+    @timewinder.model
     class Account:
         def __init__(self, name):
             self.name = name
@@ -141,30 +141,30 @@ def test_multiple_processes_if():
     alice = Account("alice")
     bob = Account("bob")
 
-    @telltale.step
+    @timewinder.step
     def withdraw(state, sender):
         sender.acc = sender.acc - state["amt"]
 
-    @telltale.step
+    @timewinder.step
     def deposit(state, reciever):
         reciever.acc = reciever.acc + state["amt"]
 
-    @telltale.step
+    @timewinder.step
     def check_funds(state, sender):
         if state["amt"] > sender.acc:
-            raise telltale.StopProcess()
+            raise timewinder.StopProcess()
 
     def alg():
-        return telltale.FuncProcess(
+        return timewinder.FuncProcess(
             check_funds(alice),
             withdraw(alice),
             deposit(bob),
             state={"amt": Set(range(1, 6))},
         )
 
-    no_overdrafts = telltale.ForAll(Account, lambda a: a.acc >= 0)
+    no_overdrafts = timewinder.ForAll(Account, lambda a: a.acc >= 0)
 
-    ev = telltale.Evaluator(
+    ev = timewinder.Evaluator(
         models=[alice, bob],
         threads=[alg(), alg()],
         specs=[no_overdrafts],
@@ -184,37 +184,37 @@ def test_multiple_processes_if():
 
 @pytest.mark.benchmark(group="practical_tla_1")
 def test_check_and_withdraw(benchmark):
-    @telltale.model
+    @timewinder.model
     class Account:
         def __init__(self, name):
             self.name = name
             self.acc = 5
 
-    @telltale.step
+    @timewinder.step
     def deposit(state, reciever):
         reciever.acc = reciever.acc + state["amt"]
 
-    @telltale.step
+    @timewinder.step
     def check_and_withdraw(state, sender):
         if state["amt"] > sender.acc:
-            raise telltale.StopProcess()
+            raise timewinder.StopProcess()
         else:
             sender.acc = sender.acc - state["amt"]
 
-    no_overdrafts = telltale.ForAll(Account, lambda a: a.acc >= 0)
+    no_overdrafts = timewinder.ForAll(Account, lambda a: a.acc >= 0)
 
     def reset_and_eval():
         alice = Account("alice")
         bob = Account("bob")
 
         def alg():
-            return telltale.FuncProcess(
+            return timewinder.FuncProcess(
                 check_and_withdraw(alice),
                 deposit(bob),
                 state={"amt": Set(range(1, 6))},
             )
 
-        ev = telltale.Evaluator(
+        ev = timewinder.Evaluator(
             models=[alice, bob],
             threads=[alg(), alg()],
             specs=[no_overdrafts],

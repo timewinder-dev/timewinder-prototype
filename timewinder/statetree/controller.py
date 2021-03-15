@@ -15,7 +15,7 @@ from typing import Union
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from telltale.model import Model
+    from timewinder.model import Model
 
 
 class StateController:

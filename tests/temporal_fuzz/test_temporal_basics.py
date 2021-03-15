@@ -3,10 +3,10 @@ from hypothesis import given, assume, settings
 from hypothesis.strategies import lists, booleans, integers, tuples
 from random import randint
 
-from telltale.ltl import eventually
-from telltale.ltl import always
-from telltale.ltl import inverse
-from telltale.ltl import leads_to
+from timewinder.ltl import eventually
+from timewinder.ltl import always
+from timewinder.ltl import inverse
+from timewinder.ltl import leads_to
 
 from typing import List
 

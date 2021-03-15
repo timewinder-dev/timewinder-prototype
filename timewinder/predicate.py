@@ -12,7 +12,7 @@ from .model import ObjectModel
 from .closure import Closure
 
 if TYPE_CHECKING:
-    from telltale.statetree import StateController
+    from timewinder.statetree import StateController
 
 
 def predicate(f):

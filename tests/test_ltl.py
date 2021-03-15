@@ -1,4 +1,4 @@
-import telltale.ltl as ltl
+import timewinder.ltl as ltl
 from tests.test_helpers import MockPredicate
 
 

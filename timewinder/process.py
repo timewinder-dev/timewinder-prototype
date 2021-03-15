@@ -8,7 +8,7 @@ from inspect import isfunction
 
 from typing import List
 
-from telltale.statetree import TreeType
+from timewinder.statetree import TreeType
 
 
 def step(function):

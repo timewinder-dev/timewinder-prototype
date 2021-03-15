@@ -1,5 +1,5 @@
 """
-These functions are particular to telltale, and add nondeterminism and other
+These functions are particular to timewinder, and add nondeterminism and other
 flow controls.
 
 Executing them should do something worthwhile, but isn't the goal. The tags are
@@ -15,7 +15,7 @@ abiV1 = {}
 def add_abi_tag(tag: str):
     def wrapper(func):
         abiV1[tag] = func
-        func.__telltale_tag = tag
+        func.__timewinder_tag = tag
         return func
 
     return wrapper

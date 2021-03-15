@@ -1,8 +1,8 @@
 import pytest
 
-from telltale.reinterp.process import BytecodeProcess
-from telltale.closure import Closure
-from telltale.functions import Await
+from timewinder.reinterp.process import BytecodeProcess
+from timewinder.closure import Closure
+from timewinder.functions import Await
 
 
 def bytecodeClosure(func):

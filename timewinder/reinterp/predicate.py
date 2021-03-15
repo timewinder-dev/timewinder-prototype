@@ -1,5 +1,5 @@
-from telltale.predicate import Predicate
-from telltale.statetree import StateController
+from timewinder.predicate import Predicate
+from timewinder.statetree import StateController
 
 from .interpreter import Interpreter
 

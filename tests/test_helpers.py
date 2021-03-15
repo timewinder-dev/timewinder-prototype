@@ -1,8 +1,8 @@
-import telltale
-from telltale.predicate import Predicate
+import timewinder
+from timewinder.predicate import Predicate
 
 
-@telltale.model
+@timewinder.model
 class A:
     def __init__(self):
         self.foo = "a"

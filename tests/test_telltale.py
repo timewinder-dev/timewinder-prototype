@@ -1,11 +1,11 @@
-import telltale
+import timewinder
 import pytest
 
 from tests.test_helpers import A
 
 
 def test_simple_eval():
-    @telltale.step
+    @timewinder.step
     def t(state, m):
         if m.foo == "a":
             m.foo = "b"
@@ -14,7 +14,7 @@ def test_simple_eval():
 
     a = A()
 
-    ev = telltale.Evaluator(
+    ev = timewinder.Evaluator(
         models=[a],
         threads=[t(a)],
     )
@@ -23,20 +23,20 @@ def test_simple_eval():
 
 
 def test_multi_eval():
-    @telltale.step
+    @timewinder.step
     def t(state, m):
         m.foo = "b"
 
-    @telltale.step
+    @timewinder.step
     def x(state, m):
         assert m.foo == "b"
         m.foo = "a"
 
     a = A()
 
-    ev = telltale.Evaluator(
+    ev = timewinder.Evaluator(
         models=[a],
-        threads=[telltale.FuncProcess(t(a), x(a))],
+        threads=[timewinder.FuncProcess(t(a), x(a))],
     )
 
     ev.evaluate(steps=4)
@@ -45,7 +45,7 @@ def test_multi_eval():
 
 
 def test_subcall_onestate():
-    @telltale.step
+    @timewinder.step
     def t(state, m):
         m.foo = "b"
         x(m)
@@ -57,7 +57,7 @@ def test_subcall_onestate():
 
     a = A()
 
-    ev = telltale.Evaluator(
+    ev = timewinder.Evaluator(
         models=[a],
         threads=[t(a)],
     )
@@ -67,17 +67,17 @@ def test_subcall_onestate():
 
 
 def test_assert_fail():
-    @telltale.step
+    @timewinder.step
     def t(state, m):
         m.foo = "b"
 
-    @telltale.step
+    @timewinder.step
     def x(state, m):
         assert m.foo == "b"
 
     a = A()
 
-    ev = telltale.Evaluator(
+    ev = timewinder.Evaluator(
         models=[a],
         threads=[t(a), x(a)],
     )

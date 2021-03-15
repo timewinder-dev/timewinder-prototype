@@ -1,4 +1,4 @@
-import telltale
+import timewinder
 
 from tests.test_helpers import A
 
@@ -6,31 +6,31 @@ from tests.test_helpers import A
 def test_run_deep_calls():
     model = A()
 
-    @telltale.step
+    @timewinder.step
     def a(state, m):
         print("in a")
         m.foo = "b"
 
-    @telltale.step
+    @timewinder.step
     def b(state, m):
         m.foo = "c"
 
-    @telltale.step
+    @timewinder.step
     def c(state, m):
         m.foo = "end1"
 
-    @telltale.step
+    @timewinder.step
     def d(state, m):
         m.foo = "end2"
 
-    alg = telltale.FuncProcess(
+    alg = timewinder.FuncProcess(
         a(model),
         b(model),
         c(model),
         d(model),
     )
 
-    ev = telltale.Evaluator(
+    ev = timewinder.Evaluator(
         models=[model],
         threads=[alg],
     )

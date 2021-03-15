@@ -6,9 +6,9 @@ from copy import copy
 from dataclasses import dataclass
 from inspect import isfunction
 
-from telltale.statetree import StateController
-from telltale.statetree import MemoryCAS
-from telltale.statetree import Hash
+from timewinder.statetree import StateController
+from timewinder.statetree import MemoryCAS
+from timewinder.statetree import Hash
 
 from .ltl import TTrace
 from .ltl import LTLOp
