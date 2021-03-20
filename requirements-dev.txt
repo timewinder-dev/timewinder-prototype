@@ -1,3 +1,4 @@
+mkdocs-material
 mypy;implementation_name=="cpython"
 pytest
 pytest-cov
