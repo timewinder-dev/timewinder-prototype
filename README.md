@@ -1,7 +1,7 @@
 ![Timewinder Logo](docs/assets/logo-1-textright.svg)
 ![Status](https://img.shields.io/badge/status-alpha-blue)
 [![license](https://img.shields.io/github/license/timewinder-dev/timewinder)](https://github.com/timewinder-dev/timewinder/blob/main/LICENSE)
-![tests](https://github.com/timewinder-dev/timewinder/workflows/tox-test/badge.svg)
+[![tox-test](https://github.com/timewinder-dev/timewinder/actions/workflows/tox-test.yaml/badge.svg)](https://github.com/timewinder-dev/timewinder/actions/workflows/tox-test.yaml)
 [![version](https://img.shields.io/pypi/v/timewinder)](https://pypi.org/project/timewinder/)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/timewinder)](https://pypi.org/project/timewinder/)
 
@@ -13,7 +13,7 @@ You can simply `pip install timewinder`.
 
 ## Developing
 
-### Pre-requesites
+### Pre-requisites
 
 You only need `tox` for orchestrating testing and documentation building:
 
