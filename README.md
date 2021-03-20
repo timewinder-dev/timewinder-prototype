@@ -1,9 +1,7 @@
-# timewinder
-
-[![license](https://img.shields.io/github/license/barakmich/timewinder)](https://github.com/barakmich/timewinder/blob/master/LICENSE)
-[![tests](https://github.com/barakmich/timewinder/workflows/tests/badge.svg)](https://github.com/barakmich/timewinder/actions?query=workflow%3Atests)
-[![codecov](https://img.shields.io/codecov/c/github/barakmich/timewinder)](https://codecov.io/gh/barakmich/timewinder)
-[![docs](https://img.shields.io/readthedocs/timewinder)](https://timewinder.readthedocs.io)
+![Timewinder Logo](docs/assets/logo-1-textright.svg)
+![Status](https://img.shields.io/badge/status-alpha-blue)
+[![license](https://img.shields.io/github/license/timewinder-dev/timewinder)](https://github.com/timewinder-dev/timewinder/blob/master/LICENSE)
+![tests](https://github.com/timewinder-dev/timewinder/workflows/tox-test/badge.svg)
 [![version](https://img.shields.io/pypi/v/timewinder)](https://pypi.org/project/timewinder/)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/timewinder)](https://pypi.org/project/timewinder/)
 
@@ -17,16 +15,16 @@ You can simply `pip install timewinder`.
 
 ### Pre-requesites
 
-You will need to install `flit` (for building the package) and `tox` (for orchestrating testing and documentation building):
+You only need `tox` for orchestrating testing and documentation building:
 
 ```
-python3 -m pip install flit tox
+python3 -m pip install tox
 ```
 
 Clone the repository:
 
 ```
-git clone https://github.com/barakmich/timewinder
+git clone https://github.com/timewinder-dev/timewinder
 ```
 
 ### Running the test suite
@@ -36,13 +34,3 @@ You can run the full test suite with:
 ```
 tox
 ```
-
-### Building the documentation
-
-You can build the HTML documentation with:
-
-```
-tox -e docs
-```
-
-The built documentation is available at `docs/_build/index.html.

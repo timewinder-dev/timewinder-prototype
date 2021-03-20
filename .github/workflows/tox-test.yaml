@@ -1,4 +1,4 @@
-name: Timewinder tox test
+name: tox-test
 
 on: [push]
 
