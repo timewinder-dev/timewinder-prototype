@@ -11,10 +11,21 @@ Timewinder is a Python 3 library to build and run temporal logic models.
 The goal of the library is to bring formal methods, specifically Lamport's [Temporal Logic of Actions](https://www.microsoft.com/en-us/research/uploads/prod/1991/12/The-Temporal-Logic-of-Actions-Current.pdf), to a broader audience.
 While very much inspired by [TLA+](https://github.com/tlaplus), Timewinder tries to be simpler, if more limited, and more industry-focused.
 
-## Concepts
+## Examples
 
-Timewinder starts with `@timewinder.object`s and `@timewinder.thread`
+* [Account Transfers](examples/practical_tlaplus_chap1.py) from [Practical TLA+](https://www.apress.com/gp/book/9781484238288) Chapter 1
+* []
 
+## High-level Usage
+
+Timewinder starts with the `@timewinder.object` and `@timewinder.process` decorators.
+`object` wraps classes and registers them as a Timewinder data structures.
+`process` wraps functions that we intend to check. Inside `process` functions, Python's `yield` keyword represents an atomicity boundary -- that is, at every yield point, the evaluator saves the state and is free to run any other available process in any order. 
+A function with no yield keyword always runs to completion in one step.
+
+Finally, there are predicates, which are properties about the objects to check at every stage.
+
+These are all combined in the `Evaluator`, where Timewinder will exhaustively generate (up to a limit number of steps) all the potential program states resulting from running the processes in any order.
 
 ## Installation
 
