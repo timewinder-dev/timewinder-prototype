@@ -54,8 +54,7 @@ def flatten_to_cas(tree: Union[dict, list], cas: CAS) -> Iterable[Hash]:
     if len(non_flats) == 0:
         h = hash_flat_tree(tree)
         cas.put(h, tree)
-        yield h
-        return
+        return [h]
 
     generators: List[Iterable] = []
 
@@ -72,6 +71,7 @@ def flatten_to_cas(tree: Union[dict, list], cas: CAS) -> Iterable[Hash]:
 
     # Shallow copy this layer, so we can edit it.
     tree_copy = copy.copy(tree)
+    out: List[Hash] = []
     # Generate the full outer join of the possible values for each key
     for state in itertools.product(*generators):
         # Fill in each key
@@ -83,5 +83,5 @@ def flatten_to_cas(tree: Union[dict, list], cas: CAS) -> Iterable[Hash]:
         # hits the base case. If any trees were generated, the recursive
         # call will progress with the newly-flat values filled in and
         # will generate the others.
-        yield from flatten_to_cas(tree_copy, cas)
-    return
+        out.extend(flatten_to_cas(tree_copy, cas))
+    return out
