@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="timewinder",
-    version="0.1dev0",
+    version="0.1dev1",
     author="Barak Michener",
     author_email="me@barakmich.com",
     description="Temporal logic models for Python",
