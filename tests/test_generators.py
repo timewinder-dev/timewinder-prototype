@@ -36,8 +36,8 @@ def test_cross_product_a():
     @timewinder.object
     class A:
         def __init__(self):
-            self.a = gens.Range(0, 2)
-            self.b = gens.Range(0, 3)
+            self.a = gens.InRange(0, 2)
+            self.b = gens.InRange(0, 3)
 
     s = StateController(MemoryCAS())
     s.mount("a", A())
@@ -50,8 +50,8 @@ def test_cross_product_b():
     @timewinder.object
     class A:
         def __init__(self):
-            self.a = gens.Range(0, 2)
-            self.b = gens.Range(0, 3)
+            self.a = gens.InRange(0, 2)
+            self.b = gens.InRange(0, 3)
 
     s = StateController(MemoryCAS())
     s.mount("a", A())

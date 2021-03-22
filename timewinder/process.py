@@ -9,6 +9,8 @@ from inspect import isfunction
 from typing import List
 
 from timewinder.statetree import TreeType
+from timewinder.pause import Continue
+from timewinder.pause import PauseReason
 
 
 def step(function):
@@ -25,7 +27,7 @@ class StopProcess(BaseException):
 
 class Process(Object, ABC):
     @abstractmethod
-    def execute(self, state_controller):
+    def execute(self, state_controller) -> Continue:
         pass
 
     @abstractmethod
@@ -69,13 +71,14 @@ class FuncProcess(Process):
             return False
         return self.pc < len(self.steps)
 
-    def execute(self, state_controller):
+    def execute(self, state_controller) -> Continue:
         assert self.can_execute()
         try:
             self.steps[self.pc]._eval(self.state)
             self.pc += 1
         except StopProcess:
             self.pc = -1
+        return Continue(PauseReason.YIELD)
 
     def __repr__(self) -> str:
         funcs = ",".join([s.func.__name__ for s in self.steps])

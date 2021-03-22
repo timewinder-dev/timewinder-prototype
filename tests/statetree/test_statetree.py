@@ -1,9 +1,9 @@
 import pytest
-import types
 
 import timewinder.statetree.tree as tree
 import timewinder.statetree.cas as cas
 import timewinder.statetree.controller as controller
+import timewinder.generators as gen
 
 
 example = {
@@ -38,8 +38,8 @@ def test_flatten_to_cas_microbenchmark(benchmark):
 
 def test_flatten_generator(benchmark):
     generator = {
-        "a": (i for i in range(5)),
-        "b": (i for i in range(4)),
+        "a": gen.Range(5),
+        "b": gen.Range(4),
     }
 
     c = cas.MemoryCAS()
@@ -47,7 +47,6 @@ def test_flatten_generator(benchmark):
     shas = list(benchmark(controller.flatten_to_cas, generator, c))
     assert len(shas) == 20
     assert len(c.store) == 20
-    assert isinstance(generator["a"], types.GeneratorType)
 
     restore = c.store.get(shas[-1].bytes)
     assert restore["a"] == 4
@@ -57,9 +56,9 @@ def test_flatten_generator(benchmark):
 def test_nested_generator(benchmark):
     generator = {
         "a": {
-            "internal": (i for i in range(5)),
+            "internal": gen.Range(5),
         },
-        "b": (i for i in range(4)),
+        "b": gen.Range(4),
     }
 
     c = cas.MemoryCAS()
@@ -76,10 +75,10 @@ def test_nested_generator(benchmark):
 def test_subtree_reuse():
     generator = {
         "a": {
-            "internal": (i for i in range(5)),
+            "internal": gen.Range(5),
         },
         "b": {
-            "internal": (i for i in range(4)),
+            "internal": gen.Range(4),
         },
     }
 

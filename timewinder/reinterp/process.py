@@ -1,6 +1,8 @@
 from timewinder.process import Process
 from timewinder.process import ProcessException
 from timewinder.statetree import TreeType
+from timewinder.pause import Continue
+from timewinder.pause import PauseReason
 
 from .interpreter import Interpreter
 
@@ -23,18 +25,20 @@ class BytecodeProcess(Process):
 
     def execute(self, state_controller):
         self.interp.state_controller = state_controller
+        cont = Continue()
         while self.interp.pc < len(self.interp.instructions):
             try:
                 cont = self.interp.interpret_instruction()
             except Exception as e:
                 raise ProcessException(f"{self.name}@{self.interp.pc}", e)
-            if not cont:
+            if cont.kind == PauseReason.DONE or cont.kind == PauseReason.YIELD:
                 break
 
-        y = self.interp.get_yield()
-        if y is not None:
-            self._name = y
+        if cont.kind == PauseReason.YIELD:
+            if cont.yield_msg != "":
+                self._name = cont.yield_msg
         self.interp.state_controller = None
+        return cont
 
     def get_state(self) -> TreeType:
         return {

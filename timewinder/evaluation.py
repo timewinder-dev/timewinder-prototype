@@ -4,11 +4,13 @@ from typing import Optional
 
 from copy import copy
 from dataclasses import dataclass
+from dataclasses import field
 from inspect import isfunction
 
 from timewinder.statetree import StateController
 from timewinder.statetree import MemoryCAS
 from timewinder.statetree import Hash
+from timewinder.pause import Fairness
 
 from .ltl import TTrace
 from .ltl import LTLOp
@@ -39,6 +41,7 @@ class EvalThunk:
     # hashes[n] --trace[n]--> hashes[n + 1]
     hashes: List[Hash]
     predicate_traces: List[TTrace]
+    must_run: List[int] = field(default_factory=list)
 
     def state_hash(self) -> Hash:
         return self.hashes[-1]
@@ -51,6 +54,7 @@ class EvalThunk:
             trace=self.trace[:],
             hashes=self.hashes[:],
             predicate_traces=[x.clone() for x in self.predicate_traces],
+            must_run=self.must_run[:],
         )
 
 
@@ -125,7 +129,7 @@ class Evaluator:
             if len(state_queue) == 0:
                 print("No more states to evaluate")
                 break
-            print(f"Evaluating Step {step}...")
+            print(f"Evaluating Step {step} ({len(state_queue)} states)...")
             self._stats.steps += 1
             for thunk in state_queue:
                 new_runs = self._eval_state(thunk)
@@ -177,7 +181,11 @@ class Evaluator:
             self._check_constraints(t)
         except ConstraintError as e:
             raise e
-        runnable_threads = [i for i, t in enumerate(self.threads) if t.can_execute()]
+        if len(t.must_run) == 0:
+            runnable_threads = [i for i, t in enumerate(self.threads) if t.can_execute()]
+        else:
+            runnable_threads = t.must_run
+
         if len(runnable_threads) == 0:
             self._stats.final_states += 1
             # TODO: Check for deadlocking when awaiting
@@ -193,14 +201,17 @@ class Evaluator:
             else:
                 self.state_controller.restore(t.state_hash())
             new_thunk = t.clone()
+            new_thunk.must_run = []
             new_thunk.trace.append(thread_id)
             thread = self.threads[thread_id]
             self._stats.thread_executions += 1
-            thread.execute(self.state_controller)
+            cont = thread.execute(self.state_controller)
             next_hashes = self.state_controller.commit()
             for h in next_hashes:
                 t_with_hash = new_thunk.clone()
                 t_with_hash.hashes.append(h)
+                if cont.fairness == Fairness.IMMEDIATE:
+                    t_with_hash.must_run = [thread_id]
                 out.append(t_with_hash)
         return out
 

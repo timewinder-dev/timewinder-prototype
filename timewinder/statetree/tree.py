@@ -2,8 +2,9 @@ from hashlib import sha256
 import types
 import msgpack
 
+from timewinder.generators import NonDeterministicSet
+
 from typing import Iterable
-from typing import Generator
 from typing import List
 from typing import Tuple
 from typing import Union
@@ -22,7 +23,7 @@ class Hash:
 
 TreeType = Union[dict, list]
 FlatValueType = Union[Hash, str, int, bool, float, None, bytes]
-ValidValueType = Union[FlatValueType, Generator]
+ValidValueType = Union[FlatValueType, NonDeterministicSet]
 TreeableType = Union[ValidValueType, dict, list]
 
 
@@ -31,7 +32,7 @@ def is_deep_type(v) -> bool:
         return True
     if isinstance(v, dict):
         return True
-    if isinstance(v, types.GeneratorType):
+    if isinstance(v, NonDeterministicSet):
         return True
     return False
 

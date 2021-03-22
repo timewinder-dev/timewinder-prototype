@@ -1,12 +1,19 @@
 import dis
 import operator
+from timewinder.pause import Continue
+from timewinder.pause import PauseReason
 
 from typing import Any
 from typing import List
+from typing import Optional
+from typing import Union
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .interpreter import Interpreter
+
+
+ProgressType = Optional[Union[PauseReason, Continue]]
 
 
 class OpcodeInterpreter:
@@ -32,19 +39,31 @@ class OpcodeInterpreter:
             if x.offset == offset:
                 return i
 
-    def interpret_instruction(self) -> bool:
+    def interpret_instruction(self) -> Continue:
         inst = self.instructions[self.pc]
         methodname = "exec_" + inst.opname.lower()
         try:
             method = self.__getattribute__(methodname)
-            ret = method(inst)
+            ret: ProgressType = method(inst)
         except AttributeError as e:
             print(e)
             return self._exec_debug(inst)
+        # Unify return types into Continue
+        # None case
+        out: Continue
         if ret is None:
+            ret = PauseReason.NORMAL
+        # Just PauseReason
+        if isinstance(ret, Continue):
+            out = ret
+        else:
+            out = Continue(ret)
+
+        if out.kind == PauseReason.NORMAL:
             self.pc += 1
-            return True
-        return ret
+        elif out.kind == PauseReason.YIELD:
+            self.pc += 1
+        return out
 
     def _exec_debug(self, inst):
         self.proc.debug_print()
@@ -68,7 +87,7 @@ class OpcodeInterpreter:
 
     def exec_load_method(self, inst):
         tos = self.pop_stack()
-        bound, method = self.proc.on_load_method(tos, inst.argval)
+        bound, method = self.proc.resolve_load_method(tos, inst.argval)
         if bound:
             self.push_stack(None)
             self.push_stack(method)
@@ -77,12 +96,12 @@ class OpcodeInterpreter:
             self.push_stack(tos)
 
     def exec_store_fast(self, inst):
-        self.proc.on_store_fast(inst.argval, self.pop_stack())
+        return self.proc.on_store_fast(inst.argval, self.pop_stack())
 
     def exec_store_attr(self, inst):
         tos = self.pop_stack()
         tos1 = self.pop_stack()
-        self.proc.resolve_setattr(tos, inst.argval, tos1)
+        return self.proc.on_setattr(tos, inst.argval, tos1)
 
     def exec_nop(self, inst):
         pass
@@ -123,10 +142,10 @@ class OpcodeInterpreter:
         tos = self.pop_stack()
         tos1 = self.pop_stack()
         if tos1 is None:
-            ret = self.proc.on_call_function(tos, args)
+            ret = self.proc.resolve_call_function(tos, args)
         else:
             args.insert(0, tos)
-            ret = self.proc.on_call_function(tos1, args)
+            ret = self.proc.resolve_call_function(tos1, args)
         self.push_stack(ret)
 
     def exec_call_function(self, inst):
@@ -136,7 +155,7 @@ class OpcodeInterpreter:
         args.reverse()
         func = self.pop_stack()
         # Delegate to the process to do the rest
-        ret = self.proc.on_call_function(func, args)
+        ret = self.proc.resolve_call_function(func, args)
         self.push_stack(ret)
 
     def exec_pop_top(self, inst):
@@ -184,25 +203,22 @@ class OpcodeInterpreter:
     def exec_pop_jump_if_false(self, inst):
         if not self.pop_stack():
             self.pc = self.find_pc_for_offset(inst.argval)
-            return True
-        return None
+            return PauseReason.PC_JUMPED
+        return PauseReason.NORMAL
 
     def exec_pop_jump_if_true(self, inst):
         if self.pop_stack():
             self.pc = self.find_pc_for_offset(inst.argval)
-            return True
-        return None
+            return PauseReason.PC_JUMPED
+        return PauseReason.NORMAL
 
     def exec_jump_absolute(self, inst):
         self.pc = self.find_pc_for_offset(inst.argval)
-        return True
+        return PauseReason.PC_JUMPED
 
     def exec_return_value(self, inst):
         self.pc = -1
-        self.proc.on_return(self.pop_stack())
-        return False
+        return self.proc.on_return(self.pop_stack())
 
     def exec_yield_value(self, inst):
-        self.proc.on_yield(self.stack[-1])
-        self.pc += 1
-        return False
+        return Continue(PauseReason.YIELD, self.stack[-1])

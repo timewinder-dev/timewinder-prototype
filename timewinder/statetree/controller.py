@@ -1,5 +1,4 @@
 import itertools
-import types
 import copy
 
 from .cas import CAS
@@ -7,6 +6,7 @@ from .tree import non_flat_keys
 from .tree import Hash
 from .tree import hash_flat_tree
 from .tree import is_deep_type
+from timewinder.generators import NonDeterministicSet
 
 from typing import Dict
 from typing import Iterable
@@ -65,8 +65,8 @@ def flatten_to_cas(tree: Union[dict, list], cas: CAS) -> Iterable[Hash]:
         val = tree[key]
         if isinstance(val, dict) or isinstance(val, list):
             generators.append(flatten_to_cas(val, cas))
-        elif isinstance(val, types.GeneratorType):
-            generators.append(val)
+        elif isinstance(val, NonDeterministicSet):
+            generators.append(val.to_generator())
         else:
             raise TypeError("Unexpected type while flattening to CAS")
 

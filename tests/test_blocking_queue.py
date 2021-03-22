@@ -1,5 +1,7 @@
+import pytest
 import timewinder
 from timewinder.generators import Set
+
 
 @timewinder.object
 class BoundedQueue:
@@ -14,10 +16,9 @@ class BoundedQueue:
         return len(self.queue) == 0
 
 
-# This is a hack, as accessing internal thread state is not
-# yet implemented.
+# This emulates cond_wait
 @timewinder.object
-class ThreadCanRun:
+class CondWait:
     def __init__(self, n_producers, n_consumers):
         self.status = [True] * (n_producers + n_consumers)
         self.n_producers = n_producers
@@ -36,16 +37,15 @@ def producer(queue, running, id):
         if not running.status[id]:
             yield "paused"
             continue
-        while not queue.is_full():
-            queue.queue.append(4)  # 4 represents arbitrary data
-        sleeping = running.sleeping()
-        running.status[id] = False
-        if len(sleeping) == 0:
+        if queue.is_full():
+            running.status[id] = False
             continue
-        wake_id = Set(sleeping)
-        yield "waking"
-        print(wake_id)
-        running.notify(wake_id)
+        queue.queue.append(4)  # 4 represents arbitrary data
+
+        sleeping = running.sleeping()
+        if len(sleeping) != 0:
+            wake_id = Set(sleeping)
+            running.notify(wake_id)
 
 
 @timewinder.process
@@ -54,20 +54,21 @@ def consumer(queue, running, id):
         if not running.status[id]:
             yield "paused"
             continue
-        while not queue.is_empty():
-            queue.queue.pop()
-        sleeping = running.sleeping()
-        running.status[id] = False
-        if len(sleeping) == 0:
+        if queue.is_empty():
+            running.status[id] = False
             continue
-        wake_id = Set(sleeping)
-        yield "waking"
-        running.notify(wake_id)
+
+        queue.queue.pop()
+
+        sleeping = running.sleeping()
+        if len(sleeping) != 0:
+            wake_id = Set(sleeping)
+            running.notify(wake_id)
 
 
 def bounded_queue_example(n_producers, n_consumers, queue_size):
     n_threads = n_producers + n_consumers
-    runnable = ThreadCanRun(n_producers, n_consumers)
+    runnable = CondWait(n_producers, n_consumers)
     bqueue = BoundedQueue(queue_size)
 
     threads = []
@@ -77,7 +78,7 @@ def bounded_queue_example(n_producers, n_consumers, queue_size):
         else:
             threads.append(consumer(bqueue, runnable, i))
 
-    no_deadlocks = timewinder.ForAll(ThreadCanRun, lambda c: any(c.status))
+    no_deadlocks = timewinder.ForAll(CondWait, lambda c: any(c.status))
 
     return timewinder.Evaluator(
         objects=[runnable, bqueue],
@@ -87,10 +88,10 @@ def bounded_queue_example(n_producers, n_consumers, queue_size):
 
 
 def test_bounded_queue_ok():
-    ev = bounded_queue_example(1,1,1)
+    ev = bounded_queue_example(1, 1, 1)
     err = None
     try:
-        env.evaluate(steps=20)
+        ev.evaluate(steps=None)
     except timewinder.ConstraintError as e:
         err = e
 
@@ -99,10 +100,24 @@ def test_bounded_queue_ok():
 
 
 def test_bounded_queue_fail():
-    ev = bounded_queue_example(2,1,1)
+    ev = bounded_queue_example(2, 1, 1)
     err = None
     try:
-        ev.evaluate(steps=50)
+        ev.evaluate(steps=None)
+    except timewinder.ConstraintError as e:
+        err = e
+
+    assert err is not None
+    print("\n" + err.name + "\n")
+    ev.replay_thunk(err.thunk)
+
+
+@pytest.mark.skip
+def test_bounded_queue_big_fail():
+    ev = bounded_queue_example(4, 3, 3)
+    err = None
+    try:
+        ev.evaluate(steps=None)
     except timewinder.ConstraintError as e:
         err = e
 

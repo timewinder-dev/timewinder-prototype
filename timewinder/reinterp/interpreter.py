@@ -1,9 +1,14 @@
+import builtins
 import dis
 import sys
 import inspect
 from dataclasses import dataclass
 
 from timewinder.object import Object
+from timewinder.pause import Continue
+from timewinder.pause import PauseReason
+from timewinder.pause import Fairness
+from timewinder.generators import NonDeterministicSet
 
 from .opcodes import OpcodeInterpreter
 
@@ -16,6 +21,8 @@ from typing import List
 OBJECT_PREFIX = "__object__"
 
 
+# Method delegates called resolve_* return the value for the stack
+# Method delegates called on_* return the Optional[Continue|PauseReason] (None is normal exec)
 class Interpreter:
     def __init__(self, func: Callable, in_args=None, in_kwargs=None):
         self.func = func
@@ -23,7 +30,6 @@ class Interpreter:
         self.ops = OpcodeInterpreter(self, instructions)
         self.binds: Dict[str, Any] = {}
         self.state: Dict[str, Any] = {}
-        self.yielded = None
         self.return_val = None
         self.done = False
 
@@ -43,31 +49,26 @@ class Interpreter:
             else:
                 self.state[name] = a
 
-    def interpret_instruction(self):
+    def interpret_instruction(self) -> Continue:
         return self.ops.interpret_instruction()
 
-    def get_yield(self):
-        y = self.yielded
-        self.yielded = None
-        return y
-
-    def on_yield(self, val):
-        self.yielded = val
-
     def on_return(self, val):
-        self.done = True
         self.return_val = val
+        return Continue(PauseReason.DONE)
 
     def on_store_fast(self, name, val):
         self.state[name] = val
+        if isinstance(val, NonDeterministicSet):
+            return Continue(kind=PauseReason.YIELD, fairness=Fairness.IMMEDIATE)
+        return None
 
-    def on_call_function(self, func, args):
+    def resolve_call_function(self, func, args):
         if isinstance(func, TagStub):
             raise NotImplementedError()
         else:
             return func(*args)
 
-    def on_load_method(self, obj, name):
+    def resolve_load_method(self, obj, name):
         method = getattr(obj, name)
         is_bound = False
         if inspect.isbuiltin(method):
@@ -106,12 +107,12 @@ class Interpreter:
                 return getattr(object, attr)
         return getattr(base, attr)
 
-    def resolve_setattr(self, base, attr, val):
+    def on_setattr(self, base, attr, val):
         if isinstance(base, str):
             if base.startswith(OBJECT_PREFIX):
                 object = self._get_from_tree(base)
                 return setattr(object, attr, val)
-        return setattr(base, attr, val)
+        setattr(base, attr, val)
 
     def _get_from_tree(self, base):
         assert self.state_controller is not None
@@ -131,7 +132,7 @@ class Interpreter:
         func_mod = sys.modules[self.func.__module__]
         g = getattr(func_mod, name, None)
         if g is None:
-            g = func_mod.__builtins__[name]
+            g = getattr(builtins, name)
         tag = getattr(g, "__timewinder_tag", None)
         if tag is None:
             return g
