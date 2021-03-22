@@ -15,20 +15,20 @@ from typing import Union
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from timewinder.model import Model
+    from timewinder.object import Object
 
 
 class StateController:
     def __init__(self, cas: CAS):
         self.cas = cas
-        self.tree: Dict[str, "Model"] = {}
+        self.tree: Dict[str, "Object"] = {}
         self.checkouts: List[str] = []
 
-    def get_model_list(self) -> Iterable["Model"]:
+    def get_object_list(self) -> Iterable["Object"]:
         return self.tree.values()
 
-    def mount(self, at: str, model: "Model"):
-        self.tree[at] = model
+    def mount(self, at: str, object: "Object"):
+        self.tree[at] = object
 
     def commit(self) -> Iterable[Hash]:
         to_commit = {k: m.get_state() for k, m in self.tree.items()}

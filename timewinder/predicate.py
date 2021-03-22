@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 
 from varname import varname
 
-from .model import ObjectModel
+from .object import ClassObject
 from .closure import Closure
 
 if TYPE_CHECKING:
@@ -65,8 +65,8 @@ class FuncPredicate(Predicate):
 
 
 class ForAll(Predicate):
-    def __init__(self, model, pred: Callable[[ObjectModel], bool]):
-        self.modeltype = model
+    def __init__(self, object, pred: Callable[[ClassObject], bool]):
+        self.objecttype = object
         self.pred = pred
         self._name = varname()
 
@@ -75,12 +75,12 @@ class ForAll(Predicate):
         return self._name
 
     def check(self, sc: "StateController") -> bool:
-        models = sc.get_model_list()
-        for m in models:
-            if not isinstance(m, ObjectModel):
+        objects = sc.get_object_list()
+        for m in objects:
+            if not isinstance(m, ClassObject):
                 continue
-            if self.modeltype is not None:
-                if not isinstance(m._instance, self.modeltype._cls):
+            if self.objecttype is not None:
+                if not isinstance(m._instance, self.objecttype._cls):
                     continue
             ok = self.pred(m)
             if not ok:

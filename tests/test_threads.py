@@ -4,7 +4,7 @@ from tests.test_helpers import A
 
 
 def test_run_deep_calls():
-    model = A()
+    object = A()
 
     @timewinder.step
     def a(state, m):
@@ -24,14 +24,14 @@ def test_run_deep_calls():
         m.foo = "end2"
 
     alg = timewinder.FuncProcess(
-        a(model),
-        b(model),
-        c(model),
-        d(model),
+        a(object),
+        b(object),
+        c(object),
+        d(object),
     )
 
     ev = timewinder.Evaluator(
-        models=[model],
+        objects=[object],
         threads=[alg],
     )
 

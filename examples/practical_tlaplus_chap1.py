@@ -2,7 +2,7 @@ import timewinder
 from timewinder.generators import Set
 
 
-@timewinder.model
+@timewinder.object
 class Account:
     def __init__(self, name, amt):
         self.name = name
@@ -34,7 +34,7 @@ no_overdrafts = timewinder.ForAll(Account, lambda a: a.acc >= 0)
 
 
 ev = timewinder.Evaluator(
-    models=[alice, bob],
+    objects=[alice, bob],
     # Alternately, only have one thread do a withdrawal of too much
     # money, and it should fail.
     #

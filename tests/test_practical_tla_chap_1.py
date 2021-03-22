@@ -6,7 +6,7 @@ from timewinder.evaluation import ConstraintError
 
 
 def test_overdraft_1():
-    @timewinder.model
+    @timewinder.object
     class Account:
         def __init__(self, name):
             self.name = name
@@ -31,7 +31,7 @@ def test_overdraft_1():
     no_overdrafts = timewinder.ForAll(Account, lambda a: a.acc >= 0)
 
     ev = timewinder.Evaluator(
-        models=[alice, bob],
+        objects=[alice, bob],
         threads=[alg],
         specs=[no_overdrafts],
     )
@@ -41,7 +41,7 @@ def test_overdraft_1():
 
 
 def test_overdraft_initial_conditions():
-    @timewinder.model
+    @timewinder.object
     class Account:
         def __init__(self, name):
             self.name = name
@@ -69,7 +69,7 @@ def test_overdraft_initial_conditions():
     no_overdrafts = timewinder.ForAll(Account, lambda a: a.acc >= 0)
 
     ev = timewinder.Evaluator(
-        models=[alice, bob],
+        objects=[alice, bob],
         threads=[alg],
         specs=[no_overdrafts],
     )
@@ -87,7 +87,7 @@ def test_overdraft_initial_conditions():
 
 
 def test_multiple_processes():
-    @timewinder.model
+    @timewinder.object
     class Account:
         def __init__(self, name):
             self.name = name
@@ -114,7 +114,7 @@ def test_multiple_processes():
     no_overdrafts = timewinder.ForAll(Account, lambda a: a.acc >= 0)
 
     ev = timewinder.Evaluator(
-        models=[alice, bob],
+        objects=[alice, bob],
         threads=[alg(), alg()],
         specs=[no_overdrafts],
     )
@@ -132,7 +132,7 @@ def test_multiple_processes():
 
 
 def test_multiple_processes_if():
-    @timewinder.model
+    @timewinder.object
     class Account:
         def __init__(self, name):
             self.name = name
@@ -165,7 +165,7 @@ def test_multiple_processes_if():
     no_overdrafts = timewinder.ForAll(Account, lambda a: a.acc >= 0)
 
     ev = timewinder.Evaluator(
-        models=[alice, bob],
+        objects=[alice, bob],
         threads=[alg(), alg()],
         specs=[no_overdrafts],
     )
@@ -184,7 +184,7 @@ def test_multiple_processes_if():
 
 @pytest.mark.benchmark(group="practical_tla_1")
 def test_check_and_withdraw(benchmark):
-    @timewinder.model
+    @timewinder.object
     class Account:
         def __init__(self, name):
             self.name = name
@@ -215,7 +215,7 @@ def test_check_and_withdraw(benchmark):
             )
 
         ev = timewinder.Evaluator(
-            models=[alice, bob],
+            objects=[alice, bob],
             threads=[alg(), alg()],
             specs=[no_overdrafts],
         )

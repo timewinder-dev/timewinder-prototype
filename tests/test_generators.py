@@ -5,7 +5,7 @@ import timewinder.generators as gens
 
 
 def test_cross_product_id():
-    @timewinder.model
+    @timewinder.object
     class A:
         def __init__(self):
             self.a = 1
@@ -19,7 +19,7 @@ def test_cross_product_id():
 
 
 def test_cross_product_one():
-    @timewinder.model
+    @timewinder.object
     class A:
         def __init__(self):
             self.a = 1
@@ -33,7 +33,7 @@ def test_cross_product_one():
 
 
 def test_cross_product_a():
-    @timewinder.model
+    @timewinder.object
     class A:
         def __init__(self):
             self.a = gens.Range(0, 2)
@@ -47,7 +47,7 @@ def test_cross_product_a():
 
 
 def test_cross_product_b():
-    @timewinder.model
+    @timewinder.object
     class A:
         def __init__(self):
             self.a = gens.Range(0, 2)

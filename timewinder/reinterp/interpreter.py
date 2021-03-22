@@ -3,7 +3,7 @@ import sys
 import inspect
 from dataclasses import dataclass
 
-from timewinder.model import Model
+from timewinder.object import Object
 
 from .opcodes import OpcodeInterpreter
 
@@ -13,7 +13,7 @@ from typing import Dict
 from typing import List
 
 
-MODEL_PREFIX = "__model__"
+OBJECT_PREFIX = "__object__"
 
 
 class Interpreter:
@@ -38,8 +38,8 @@ class Interpreter:
         n_args = self.func.__code__.co_argcount
         argnames = list(self.func.__code__.co_varnames)[:n_args]
         for name, a in zip(argnames, in_args):
-            if isinstance(a, Model):
-                self.binds[name] = MODEL_PREFIX + a.name
+            if isinstance(a, Object):
+                self.binds[name] = OBJECT_PREFIX + a.name
             else:
                 self.state[name] = a
 
@@ -85,9 +85,9 @@ class Interpreter:
 
     def resolve_var(self, var):
         if isinstance(var, str):
-            if var.startswith(MODEL_PREFIX):
-                model = self._get_from_tree(var)
-                return model
+            if var.startswith(OBJECT_PREFIX):
+                object = self._get_from_tree(var)
+                return object
         return var
 
     @property
@@ -100,22 +100,22 @@ class Interpreter:
 
     def resolve_getattr(self, base, attr):
         if isinstance(base, str):
-            if base.startswith(MODEL_PREFIX):
-                model = self._get_from_tree(base)
-                return getattr(model, attr)
+            if base.startswith(OBJECT_PREFIX):
+                object = self._get_from_tree(base)
+                return getattr(object, attr)
         return getattr(base, attr)
 
     def resolve_setattr(self, base, attr, val):
         if isinstance(base, str):
-            if base.startswith(MODEL_PREFIX):
-                model = self._get_from_tree(base)
-                return setattr(model, attr, val)
+            if base.startswith(OBJECT_PREFIX):
+                object = self._get_from_tree(base)
+                return setattr(object, attr, val)
         return setattr(base, attr, val)
 
     def _get_from_tree(self, base):
         assert self.state_controller is not None
-        model_name = base[len(MODEL_PREFIX) :]
-        return self.state_controller.tree[model_name]
+        object_name = base[len(OBJECT_PREFIX) :]
+        return self.state_controller.tree[object_name]
 
     def debug_print(self):
         import pprint

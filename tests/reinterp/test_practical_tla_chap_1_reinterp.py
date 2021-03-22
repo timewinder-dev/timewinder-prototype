@@ -6,7 +6,7 @@ from timewinder.evaluation import ConstraintError
 from timewinder.evaluation import StutterConstraintError
 
 
-@timewinder.model
+@timewinder.object
 class Account:
     def __init__(self, name, amt):
         self.name = name
@@ -26,7 +26,7 @@ def test_overdraft_1():
     no_overdrafts = timewinder.ForAll(Account, lambda a: a.acc >= 0)
 
     ev = timewinder.Evaluator(
-        models=[alice, bob],
+        objects=[alice, bob],
         threads=[withdraw(alice, bob, 3)],
         specs=[no_overdrafts],
     )
@@ -48,7 +48,7 @@ def test_overdraft_initial_conditions():
     no_overdrafts = timewinder.ForAll(Account, lambda a: a.acc >= 0)
 
     ev = timewinder.Evaluator(
-        models=[alice, bob],
+        objects=[alice, bob],
         threads=[withdraw(alice, bob, Set(range(1, 7)))],
         specs=[no_overdrafts],
     )
@@ -81,7 +81,7 @@ def test_check_and_withdraw_reinterp(benchmark):
         bob = Account("bob", 5)
 
         ev = timewinder.Evaluator(
-            models=[alice, bob],
+            objects=[alice, bob],
             threads=[
                 check_and_withdraw(alice, bob, Set(range(1, 6))),
                 check_and_withdraw(alice, bob, Set(range(1, 6))),
@@ -119,7 +119,7 @@ def test_liveness_reinterp():
     )
 
     ev = timewinder.Evaluator(
-        models=[alice, bob],
+        objects=[alice, bob],
         threads=[
             check_and_withdraw(alice, bob, Set(range(1, 6))),
             check_and_withdraw(alice, bob, Set(range(1, 6))),

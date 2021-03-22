@@ -1,7 +1,7 @@
 import timewinder
 
 
-@timewinder.model
+@timewinder.object
 class Queue:
     def __init__(self, transmit=4):
         self.queue = []
@@ -30,7 +30,7 @@ def test_processes():
             q.queue = q.queue[1:]
 
     ev = timewinder.Evaluator(
-        models=[q],
+        objects=[q],
         threads=[writer(q), reader(q)],
         specs=[bounded_queue(q, 2)],
     )
@@ -64,7 +64,7 @@ def test_emulate_await_p1():
             q.queue = q.queue[1:]
 
     ev = timewinder.Evaluator(
-        models=[q],
+        objects=[q],
         threads=[writer(q), reader(q)],
         specs=[bounded_queue(q, 2)],
     )
@@ -102,7 +102,7 @@ def test_emulate_await_p2():
             q.queue = q.queue[1:]
 
     ev = timewinder.Evaluator(
-        models=[q],
+        objects=[q],
         threads=[writer(q), reader(q)],
         specs=[bounded_queue(q, 2)],
     )
@@ -140,7 +140,7 @@ def test_transmit_extension():
             q.queue = q.queue[1:]
 
     ev = timewinder.Evaluator(
-        models=[q],
+        objects=[q],
         threads=[writer(q, max_queue_length), reader(q)],
         specs=[
             bounded_queue(q, max_queue_length),

@@ -7,18 +7,18 @@ from varname import varname
 from timewinder.statetree import TreeType
 
 
-def model(cls):
-    """Decorator wrapping a class representing model state."""
+def object(cls):
+    """Decorator wrapping a class representing object state."""
 
     def wrapper(*args, **kwargs):
         name = varname(raise_exc=False)
-        return ObjectModel(cls, name, args, kwargs)
+        return ClassObject(cls, name, args, kwargs)
 
     wrapper._cls = cls
     return wrapper
 
 
-class Model(ABC):
+class Object(ABC):
     @abstractproperty
     def name(self) -> str:
         pass
@@ -33,8 +33,8 @@ class Model(ABC):
         pass
 
 
-class ObjectModel(Model):
-    """Represents a stateful object"""
+class ClassObject(Object):
+    """Represents a class as a timewinder object"""
 
     def __init__(self, cls, name, args, kwargs):
         self._cls = cls

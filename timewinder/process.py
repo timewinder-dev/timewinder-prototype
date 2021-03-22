@@ -1,7 +1,7 @@
 from abc import ABC
 from abc import abstractmethod
 
-from .model import Model
+from .object import Object
 from .closure import Closure
 
 from inspect import isfunction
@@ -23,7 +23,7 @@ class StopProcess(BaseException):
     pass
 
 
-class Process(Model, ABC):
+class Process(Object, ABC):
     @abstractmethod
     def execute(self, state_controller):
         pass

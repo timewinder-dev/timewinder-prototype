@@ -1,7 +1,7 @@
-"Temporal logic models for Python"
+"Temporal logic objects for Python"
 __version__ = "0.1dev0"
 
-from .model import model
+from .object import object
 from .evaluation import Evaluator
 from .process import step
 from .process import FuncProcess

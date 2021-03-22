@@ -83,10 +83,10 @@ def _prepare_specs(specs) -> List[LTLOp]:
 
 
 class Evaluator:
-    def __init__(self, *, models=None, threads: List = None, specs: List = None):
+    def __init__(self, *, objects=None, threads: List = None, specs: List = None):
         self.state_controller = StateController(MemoryCAS())
-        if models is not None:
-            for m in models:
+        if objects is not None:
+            for m in objects:
                 self.state_controller.mount(m._name, m)
         if threads is None or len(threads) == 0:
             # We're doing static state space analysis

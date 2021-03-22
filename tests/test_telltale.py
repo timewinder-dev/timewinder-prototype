@@ -15,7 +15,7 @@ def test_simple_eval():
     a = A()
 
     ev = timewinder.Evaluator(
-        models=[a],
+        objects=[a],
         threads=[t(a)],
     )
 
@@ -35,7 +35,7 @@ def test_multi_eval():
     a = A()
 
     ev = timewinder.Evaluator(
-        models=[a],
+        objects=[a],
         threads=[timewinder.FuncProcess(t(a), x(a))],
     )
 
@@ -58,7 +58,7 @@ def test_subcall_onestate():
     a = A()
 
     ev = timewinder.Evaluator(
-        models=[a],
+        objects=[a],
         threads=[t(a)],
     )
 
@@ -78,7 +78,7 @@ def test_assert_fail():
     a = A()
 
     ev = timewinder.Evaluator(
-        models=[a],
+        objects=[a],
         threads=[t(a), x(a)],
     )
 

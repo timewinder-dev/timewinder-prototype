@@ -2,7 +2,7 @@ import timewinder
 from timewinder.predicate import Predicate
 
 
-@timewinder.model
+@timewinder.object
 class A:
     def __init__(self):
         self.foo = "a"
