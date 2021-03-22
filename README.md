@@ -27,6 +27,7 @@ Help is definitely wanted and appreciated!
 ## Examples
 
 * [Account Transfers](examples/practical_tlaplus_chap1.py) from [Practical TLA+, Chapter 1](https://www.apress.com/gp/book/9781484238288)
+* [Blocking Queue](examples/blocking_queue.py) from [Weeks of Debugging Can Save You Hours of TLA+](https://www.youtube.com/watch?v=wjsI0lTSjIo)
 
 ## High-level Usage
 
