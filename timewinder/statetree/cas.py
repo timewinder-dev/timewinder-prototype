@@ -11,6 +11,9 @@ from .tree import Hash
 from .tree import non_flat_keys
 
 
+_DEBUG = False
+
+
 class CAS(ABC):
     @abstractmethod
     def put(self, sha: Hash, data: TreeType):
@@ -48,7 +51,8 @@ class MemoryCAS(CAS):
         self.store: Dict[bytes, TreeType] = {}
 
     def put(self, sha: Hash, data: TreeType):
-        assert len(non_flat_keys(data)) == 0
+        if _DEBUG:
+            assert len(non_flat_keys(data)) == 0
         self.store[sha.bytes] = copy.copy(data)
 
     def get(self, sha: Hash) -> TreeType:

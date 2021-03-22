@@ -27,11 +27,7 @@ TreeableType = Union[ValidValueType, dict, list]
 
 
 def is_deep_type(v) -> bool:
-    if isinstance(v, list):
-        return True
-    if isinstance(v, dict):
-        return True
-    if isinstance(v, NonDeterministicSet):
+    if isinstance(v, (list, dict, NonDeterministicSet)):
         return True
     return False
 
@@ -53,8 +49,7 @@ def _serialize_list(l) -> bytes:
     return _packer.pack(l)
 
 
-def hash_flat_tree(tree) -> Hash:
-    assert len(non_flat_keys(tree)) == 0
+def hash_flat_tree(tree: Union[list, dict]) -> Hash:
     hasher = sha256()
     if isinstance(tree, dict):
         m = _serialize_tree(tree)
@@ -66,15 +61,13 @@ def hash_flat_tree(tree) -> Hash:
     return Hash(hasher.digest())
 
 
-def non_flat_keys(tree) -> List:
+def non_flat_keys(tree: Union[list, dict]) -> List:
     out = []
     items: Iterable[Tuple]
     if isinstance(tree, list):
         items = enumerate(tree)
-    elif isinstance(tree, dict):
-        items = tree.items()
     else:
-        raise TypeError("Can only check keys of nestable objects")
+        items = tree.items()
     for k, v in items:
         if is_deep_type(v):
             out.append(k)

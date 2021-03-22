@@ -136,6 +136,8 @@ class Interpreter:
         func_mod = sys.modules[self.func.__module__]
         g = getattr(func_mod, name, None)
         if g is None:
+            g = self.func.__globals__.get(name, None)
+        if g is None:
             g = getattr(builtins, name)
         tag = getattr(g, "__timewinder_tag", None)
         if tag is None:
