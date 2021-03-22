@@ -1,5 +1,5 @@
 import timewinder
-from timewinder.generators import Set
+from timewinder.generators import Set  # noqa
 
 # This model intends to check the correctness of bank
 # accounts and moving money between them, with different
