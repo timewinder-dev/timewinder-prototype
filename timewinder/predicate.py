@@ -88,4 +88,4 @@ class ForAll(Predicate):
         return True
 
     def __repr__(self) -> str:
-        return "ForAll(%s)" % self.pred.__name__
+        return f"{self._name}:ForAll({self.pred.__name__})"

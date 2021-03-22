@@ -59,7 +59,11 @@ class Interpreter:
     def on_store_fast(self, name, val):
         self.state[name] = val
         if isinstance(val, NonDeterministicSet):
-            return Continue(kind=PauseReason.YIELD, fairness=Fairness.IMMEDIATE)
+            return Continue(
+                kind=PauseReason.YIELD,
+                yield_msg=f"NonDeterminism({name})",
+                fairness=Fairness.IMMEDIATE
+            )
         return None
 
     def resolve_call_function(self, func, args):

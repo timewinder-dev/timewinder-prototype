@@ -11,12 +11,13 @@ from typing import Callable
 
 class BytecodeProcess(Process):
     def __init__(self, func: Callable, in_args=None, in_kwargs=None):
-        self._name = func.__name__
+        self._funcname = func.__name__
+        self._stepname = "start"
         self.interp = Interpreter(func, in_args, in_kwargs)
 
     @property
     def name(self) -> str:
-        return self._name
+        return f"{self._funcname}@{self._stepname}"
 
     def can_execute(self) -> bool:
         if self.interp.pc < 0:
@@ -36,7 +37,7 @@ class BytecodeProcess(Process):
 
         if cont.kind == PauseReason.YIELD:
             if cont.yield_msg != "":
-                self._name = cont.yield_msg
+                self._stepname = cont.yield_msg
         self.interp.state_controller = None
         return cont
 
@@ -45,7 +46,8 @@ class BytecodeProcess(Process):
             "state": self.interp.state,
             "stack": self.interp.ops.stack,
             "pc": self.interp.ops.pc,
-            "_name": self._name,
+            "_stepname": self._stepname,
+            "_funcname": self._funcname,
         }
 
     def set_state(self, state: TreeType):
@@ -53,7 +55,8 @@ class BytecodeProcess(Process):
         self.interp.state = state["state"]
         self.interp.ops.stack = state["stack"]
         self.interp.ops.pc = state["pc"]
-        self._name = state["_name"]
+        self._stepname = state["_stepname"]
+        self._funcname = state["_funcname"]
 
     def __repr__(self) -> str:
-        return f"{self._name}@{self.interp.ops.pc}: {self.interp.state}"
+        return f"{self.name}: {self.interp.state}"

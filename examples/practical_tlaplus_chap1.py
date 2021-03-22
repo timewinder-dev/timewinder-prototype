@@ -80,5 +80,5 @@ except timewinder.ConstraintError as e:
 if err is None:
     print(ev.stats)
 else:
-    print("\n" + err.name + "\n")
+    print(f"\nConstraint Violated: {err.name}\n")
     ev.replay_thunk(err.thunk)
