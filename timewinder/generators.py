@@ -1,4 +1,3 @@
-from types import GeneratorType
 from typing import Iterable
 from typing import Optional
 
@@ -7,7 +6,7 @@ class NonDeterministicSet:
     def __init__(self, s: Iterable):
         self.set = s
 
-    def to_generator(self) -> GeneratorType:
+    def to_generator(self):
         return (x for x in self.set)
 
 

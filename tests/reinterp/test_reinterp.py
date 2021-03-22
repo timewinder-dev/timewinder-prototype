@@ -74,7 +74,7 @@ def test_yield():
     a = bytecodeClosure(f)
     proc = a(1)
     proc.execute(None)
-    assert proc.name == "Step 1"
+    assert proc.name == "f@Step 1"
     proc.execute(None)
-    assert proc.name == "Step 2"
+    assert proc.name == "f@Step 2"
     proc.execute(None)

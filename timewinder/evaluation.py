@@ -182,7 +182,9 @@ class Evaluator:
         except ConstraintError as e:
             raise e
         if len(t.must_run) == 0:
-            runnable_threads = [i for i, t in enumerate(self.threads) if t.can_execute()]
+            runnable_threads = [
+                i for i, t in enumerate(self.threads) if t.can_execute()
+            ]
         else:
             runnable_threads = t.must_run
 

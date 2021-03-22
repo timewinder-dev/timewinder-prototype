@@ -62,7 +62,7 @@ class Interpreter:
             return Continue(
                 kind=PauseReason.YIELD,
                 yield_msg=f"NonDeterminism({name})",
-                fairness=Fairness.IMMEDIATE
+                fairness=Fairness.IMMEDIATE,
             )
         return None
 

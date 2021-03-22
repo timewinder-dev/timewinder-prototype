@@ -1,5 +1,4 @@
 from hashlib import sha256
-import types
 import msgpack
 
 from timewinder.generators import NonDeterministicSet
