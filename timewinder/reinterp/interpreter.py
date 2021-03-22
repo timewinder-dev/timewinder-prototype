@@ -80,7 +80,8 @@ class Interpreter:
         if varname in self.state:
             return self.state[varname]
         if varname in self.binds:
-            return self.binds[varname]
+            ref = self.binds[varname]
+            return self._get_from_tree(ref)
         raise LookupError(f"Couldn't find variable {varname}")
 
     def resolve_var(self, var):
