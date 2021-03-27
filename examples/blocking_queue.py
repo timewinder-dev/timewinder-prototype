@@ -1,10 +1,11 @@
 import timewinder
 from timewinder.generators import Set
+from timewinder.functions import ThreadID
 
 # These are the variables we'd like to modify to test
 # bigger models.
-PRODUCERS = 4
-CONSUMERS = 3
+PRODUCERS = 3
+CONSUMERS = 2
 QUEUE_SIZE = 1
 
 
@@ -37,37 +38,37 @@ class CondWait:
 
 
 @timewinder.process
-def producer(queue, running, id):
+def producer(queue, running):
     while True:
-        if not running.status[id]:
+        if not running.status[ThreadID()]:
             yield "paused"
             continue
         if queue.is_full():
-            running.status[id] = False
+            running.status[ThreadID()] = False
             continue
         queue.queue.append(4)  # 4 represents arbitrary data
 
-        sleeping = running.sleeping()
-        if len(sleeping) != 0:
-            wake_id = Set(sleeping)
+        _sleeping = running.sleeping()
+        if len(_sleeping) != 0:
+            wake_id = Set(_sleeping)
             running.notify(wake_id)
 
 
 @timewinder.process
-def consumer(queue, running, id):
+def consumer(queue, running):
     while True:
-        if not running.status[id]:
+        if not running.status[ThreadID()]:
             yield "paused"
             continue
         if queue.is_empty():
-            running.status[id] = False
+            running.status[ThreadID()] = False
             continue
 
         queue.queue.pop()
 
-        sleeping = running.sleeping()
-        if len(sleeping) != 0:
-            wake_id = Set(sleeping)
+        _sleeping = running.sleeping()
+        if len(_sleeping) != 0:
+            wake_id = Set(_sleeping)
             running.notify(wake_id)
 
 
