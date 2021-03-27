@@ -1,6 +1,7 @@
 from typing import List
 from typing import Set
 from typing import Optional
+import progressbar
 
 from copy import copy
 from dataclasses import dataclass
@@ -98,6 +99,7 @@ class Evaluator:
         else:
             self.threads = _prepare_threads(threads)
             for i, t in enumerate(self.threads):
+                t.on_register_evaluator(i)
                 self.state_controller.mount(f"_thread_{i}", t)
         self.specs = _prepare_specs(specs)
         self._evaled_states: Set[bytes] = set()
@@ -131,7 +133,7 @@ class Evaluator:
                 break
             print(f"Evaluating Step {step} ({len(state_queue)} states)...")
             self._stats.steps += 1
-            for thunk in state_queue:
+            for thunk in progressbar.progressbar(state_queue):
                 new_runs = self._eval_state(thunk)
                 next_queue.extend(new_runs)
 

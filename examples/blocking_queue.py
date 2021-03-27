@@ -3,8 +3,8 @@ from timewinder.generators import Set
 
 # These are the variables we'd like to modify to test
 # bigger models.
-PRODUCERS = 2
-CONSUMERS = 1
+PRODUCERS = 4
+CONSUMERS = 3
 QUEUE_SIZE = 1
 
 

@@ -16,6 +16,7 @@ from typing import Any
 from typing import Callable
 from typing import Dict
 from typing import List
+from typing import Optional
 
 
 OBJECT_PREFIX = "__object__"
@@ -32,6 +33,7 @@ class Interpreter:
         self.state: Dict[str, Any] = {}
         self.return_val = None
         self.done = False
+        self.thread_idx: Optional[int] = None
 
         # Set from the outside
         self.state_controller = None
@@ -68,6 +70,8 @@ class Interpreter:
 
     def resolve_call_function(self, func, args):
         if isinstance(func, TagStub):
+            if func.tag == "thread_id":
+                return self.thread_idx
             raise NotImplementedError()
         else:
             return func(*args)

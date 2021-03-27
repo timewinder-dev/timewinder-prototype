@@ -1,5 +1,7 @@
 from timewinder.process import Process
 from timewinder.process import ProcessException
+from timewinder.statetree import CAS
+from timewinder.statetree import Hash
 from timewinder.statetree import TreeType
 from timewinder.pause import Continue
 from timewinder.pause import PauseReason
@@ -14,6 +16,10 @@ class BytecodeProcess(Process):
         self._funcname = func.__name__
         self._stepname = "start"
         self.interp = Interpreter(func, in_args, in_kwargs)
+        self.set_hash = None
+
+    def on_register_evaluator(self, idx: int) -> None:
+        self.interp.thread_idx = idx
 
     @property
     def name(self) -> str:
@@ -41,7 +47,12 @@ class BytecodeProcess(Process):
         self.interp.state_controller = None
         return cont
 
+    def register_cas(self, cas: CAS) -> None:
+        self._cas = cas
+
     def get_state(self) -> TreeType:
+        if self.set_hash is not None:
+            return self.set_hash
         return {
             "state": self.interp.state,
             "stack": self.interp.ops.stack,
@@ -50,7 +61,8 @@ class BytecodeProcess(Process):
             "_funcname": self._funcname,
         }
 
-    def set_state(self, state: TreeType):
+    def set_state(self, hash: Hash):
+        state = self._cas.restore(hash)
         assert isinstance(state, dict)
         self.interp.state = state["state"]
         self.interp.ops.stack = state["stack"]

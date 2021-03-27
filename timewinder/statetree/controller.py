@@ -27,17 +27,18 @@ class StateController:
     def get_object_list(self) -> Iterable["Object"]:
         return self.tree.values()
 
-    def mount(self, at: str, object: "Object"):
-        self.tree[at] = object
+    def mount(self, at: str, obj: "Object"):
+        obj.register_cas(self.cas)
+        self.tree[at] = obj
 
     def commit(self) -> Iterable[Hash]:
         to_commit = {k: m.get_state() for k, m in self.tree.items()}
         return flatten_to_cas(to_commit, self.cas)
 
     def restore(self, state_hash: Hash):
-        restored = self.cas.restore(state_hash)
-        assert isinstance(restored, dict), "StateController only saves dicts"
-        for k, v in restored.items():
+        top_restored = self.cas.get(state_hash)
+        assert isinstance(top_restored, dict), "StateController only saves dicts"
+        for k, v in top_restored.items():
             self.tree[k].set_state(v)
 
     def state_to_str(self):

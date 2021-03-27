@@ -8,6 +8,8 @@ from inspect import isfunction
 
 from typing import List
 
+from timewinder.statetree import CAS
+from timewinder.statetree import Hash
 from timewinder.statetree import TreeType
 from timewinder.pause import Continue
 from timewinder.pause import PauseReason
@@ -34,6 +36,10 @@ class Process(Object, ABC):
     def can_execute(self) -> bool:
         pass
 
+    @abstractmethod
+    def on_register_evaluator(self, idx: int) -> None:
+        pass
+
 
 class Step:
     def __init__(self, func, args, kwargs):
@@ -55,13 +61,20 @@ class FuncProcess(Process):
     def name(self):
         return self.__repr__()
 
+    def register_cas(self, cas: CAS) -> None:
+        self._cas = cas
+
     def get_state(self) -> TreeType:
         return {
             "pc": self.pc,
             "state": self.state,
         }
 
-    def set_state(self, state: TreeType) -> None:
+    def on_register_evaluator(self, idx: int) -> None:
+        pass
+
+    def set_state(self, hash: Hash) -> None:
+        state = self._cas.restore(hash)
         assert isinstance(state, dict)
         self.pc = state["pc"]
         self.state = state["state"]

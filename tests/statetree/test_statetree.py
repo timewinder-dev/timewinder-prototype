@@ -1,6 +1,3 @@
-import pytest
-
-import timewinder.statetree.tree as tree
 import timewinder.statetree.cas as cas
 import timewinder.statetree.controller as controller
 import timewinder.generators as gen
@@ -19,9 +16,6 @@ example = {
 
 
 def test_convert_tree():
-    with pytest.raises(AssertionError):
-        h = tree.hash_flat_tree(example)
-
     c = cas.MemoryCAS()
     g = list(controller.flatten_to_cas(example, c))
     assert len(g) == 1

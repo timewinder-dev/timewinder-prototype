@@ -4,6 +4,8 @@ from abc import abstractproperty
 from uuid import uuid4
 from varname import varname
 
+from timewinder.statetree import CAS
+from timewinder.statetree import Hash
 from timewinder.statetree import TreeType
 
 
@@ -24,11 +26,15 @@ class Object(ABC):
         pass
 
     @abstractmethod
+    def register_cas(self, cas: CAS) -> None:
+        pass
+
+    @abstractmethod
     def get_state(self) -> TreeType:
         pass
 
     @abstractmethod
-    def set_state(self, state: TreeType) -> None:
+    def set_state(self, state_hash: Hash) -> None:
         """Takes ownership of the given state"""
         pass
 
@@ -44,10 +50,14 @@ class ClassObject(Object):
         else:
             self._name = uuid4().hex
 
+    def register_cas(self, cas: CAS) -> None:
+        self._cas = cas
+
     def get_state(self):
         return self._instance.__dict__
 
-    def set_state(self, state: TreeType) -> None:
+    def set_state(self, state_hash: Hash) -> None:
+        state = self._cas.restore(state_hash)
         self._instance.__dict__ = state
 
     @property
@@ -58,7 +68,7 @@ class ClassObject(Object):
         return getattr(self._instance, key)
 
     def __setattr__(self, key, val):
-        if key in ["_instance", "_cls", "_name"]:
+        if key in ["_instance", "_cls", "_name", "_cas"]:
             self.__dict__[key] = val
             return
         return setattr(self._instance, key, val)

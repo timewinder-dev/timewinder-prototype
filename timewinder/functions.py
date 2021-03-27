@@ -29,3 +29,8 @@ def Await(b: bool):
 @add_abi_tag("either")
 def Either() -> Iterable[bool]:
     return (x for x in [True, False])
+
+
+@add_abi_tag("thread_id")
+def ThreadID() -> int:
+    return -1
