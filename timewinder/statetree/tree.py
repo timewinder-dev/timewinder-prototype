@@ -38,8 +38,8 @@ TreeableType = Union[ValidValueType, dict, list]
 HashType = Union[Hash, dict, list]
 
 
-def is_deep_type(v) -> bool:
-    if isinstance(v, (list, dict, NonDeterministicSet)):
+def _is_deep_type(v) -> bool:
+    if isinstance(v, (dict, list, NonDeterministicSet)):
         return True
     return False
 
@@ -74,13 +74,8 @@ def hash_flat_tree(tree: Union[list, dict]) -> Hash:
 
 
 def non_flat_keys(tree: Union[list, dict]) -> List:
-    out = []
     items: Iterable[Tuple]
     if isinstance(tree, list):
-        items = enumerate(tree)
+        return [k for k, v in enumerate(tree) if isinstance(v, (dict, list, NonDeterministicSet))]
     else:
-        items = tree.items()
-    for k, v in items:
-        if is_deep_type(v):
-            out.append(k)
-    return out
+        return [k for k in tree if isinstance(tree[k], (dict, list, NonDeterministicSet))]

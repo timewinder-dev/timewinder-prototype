@@ -5,6 +5,7 @@ from timewinder.pause import PauseReason
 
 from typing import Any
 from typing import List
+from typing import Dict
 from typing import Optional
 from typing import Union
 from typing import TYPE_CHECKING
@@ -14,13 +15,14 @@ if TYPE_CHECKING:
 
 
 ProgressType = Optional[Union[PauseReason, Continue]]
+DEFAULT_CONTINUE = Continue()
 
 
 class OpcodeInterpreter:
     def __init__(self, proc: "Interpreter", instructions):
         self.proc = proc
         self.stack: List[Any] = []
-        self.instructions: List[dis.Instruction] = instructions
+        self.instructions: Dict[int, dis.Instruction] = {i: inst for (i, inst) in enumerate(instructions)}
         self.pc = 0
 
     def push_stack(self, v: Any):
@@ -35,7 +37,7 @@ class OpcodeInterpreter:
         return v
 
     def find_pc_for_offset(self, offset):
-        for i, x in enumerate(self.instructions):
+        for i, x in self.instructions.items():
             if x.offset == offset:
                 return i
 
@@ -52,7 +54,8 @@ class OpcodeInterpreter:
         # None case
         out: Continue
         if ret is None:
-            ret = PauseReason.NORMAL
+            self.pc += 1
+            return DEFAULT_CONTINUE
         # Just PauseReason
         if isinstance(ret, Continue):
             out = ret

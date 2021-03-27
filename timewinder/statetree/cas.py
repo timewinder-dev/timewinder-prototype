@@ -53,6 +53,8 @@ class MemoryCAS(CAS):
     def put(self, sha: Hash, data: TreeType):
         if _DEBUG:
             assert len(non_flat_keys(data)) == 0
+        if sha.bytes in self.store:
+            return
         self.store[sha.bytes] = copy.copy(data)
 
     def get(self, sha: Hash) -> TreeType:

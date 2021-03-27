@@ -212,6 +212,8 @@ class Evaluator:
             cont = thread.execute(self.state_controller)
             next_hashes = self.state_controller.commit()
             for h in next_hashes:
+                if h.bytes in self._evaled_states:
+                    continue
                 t_with_hash = new_thunk.clone()
                 t_with_hash.hashes.append(h)
                 if cont.fairness == Fairness.IMMEDIATE:
