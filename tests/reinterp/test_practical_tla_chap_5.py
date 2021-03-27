@@ -114,7 +114,7 @@ def test_emulate_await_p2():
         ev.replay_thunk(e.thunk)
         assert False
 
-    assert ev.stats.states == 13
+    assert ev.stats.states == 10
 
 
 def test_transmit_extension():

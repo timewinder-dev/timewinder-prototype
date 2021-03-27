@@ -10,7 +10,7 @@ from typing import List
 
 from timewinder.statetree import CAS
 from timewinder.statetree import Hash
-from timewinder.statetree import TreeType
+from timewinder.statetree import TreeableType
 from timewinder.pause import Continue
 from timewinder.pause import PauseReason
 
@@ -64,7 +64,7 @@ class FuncProcess(Process):
     def register_cas(self, cas: CAS) -> None:
         self._cas = cas
 
-    def get_state(self) -> TreeType:
+    def get_state(self) -> TreeableType:
         return {
             "pc": self.pc,
             "state": self.state,

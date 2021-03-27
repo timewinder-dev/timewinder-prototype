@@ -2,13 +2,14 @@ from timewinder.process import Process
 from timewinder.process import ProcessException
 from timewinder.statetree import CAS
 from timewinder.statetree import Hash
-from timewinder.statetree import TreeType
+from timewinder.statetree import TreeableType
 from timewinder.pause import Continue
 from timewinder.pause import PauseReason
 
 from .interpreter import Interpreter
 
 from typing import Callable
+from typing import Optional
 
 
 class BytecodeProcess(Process):
@@ -16,7 +17,7 @@ class BytecodeProcess(Process):
         self._funcname = func.__name__
         self._stepname = "start"
         self.interp = Interpreter(func, in_args, in_kwargs)
-        self.set_hash = None
+        self.set_hash: Optional[Hash] = None
 
     def on_register_evaluator(self, idx: int) -> None:
         self.interp.thread_idx = idx
@@ -31,6 +32,7 @@ class BytecodeProcess(Process):
         return self.interp.pc < len(self.interp.instructions)
 
     def execute(self, state_controller):
+        self.set_hash = None
         self.interp.state_controller = state_controller
         cont = Continue()
         while self.interp.pc < len(self.interp.instructions):
@@ -50,11 +52,15 @@ class BytecodeProcess(Process):
     def register_cas(self, cas: CAS) -> None:
         self._cas = cas
 
-    def get_state(self) -> TreeType:
+    def get_state(self) -> TreeableType:
         if self.set_hash is not None:
             return self.set_hash
+        save_state = {
+            k: v for (k, v) in self.interp.state.items()
+            if not k.startswith("_")
+        }
         return {
-            "state": self.interp.state,
+            "state": save_state,
             "stack": self.interp.ops.stack,
             "pc": self.interp.ops.pc,
             "_stepname": self._stepname,
@@ -62,6 +68,9 @@ class BytecodeProcess(Process):
         }
 
     def set_state(self, hash: Hash):
+        if hash == self.set_hash:
+            return
+        self.set_hash = hash
         state = self._cas.restore(hash)
         assert isinstance(state, dict)
         self.interp.state = state["state"]

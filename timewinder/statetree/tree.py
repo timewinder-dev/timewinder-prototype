@@ -16,6 +16,12 @@ class Hash:
     def hex(self):
         return self.bytes.hex()
 
+    def __eq__(self, obj):
+        return isinstance(obj, Hash) and self.bytes == obj.bytes
+
+    def __ne__(self, obj):
+        return not self == obj
+
     def __repr__(self) -> str:
         return "Hash(%s)" % self.bytes.hex()
 

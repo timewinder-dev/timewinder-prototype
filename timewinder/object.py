@@ -6,7 +6,7 @@ from varname import varname
 
 from timewinder.statetree import CAS
 from timewinder.statetree import Hash
-from timewinder.statetree import TreeType
+from timewinder.statetree import TreeableType
 
 
 def object(cls):
@@ -30,7 +30,7 @@ class Object(ABC):
         pass
 
     @abstractmethod
-    def get_state(self) -> TreeType:
+    def get_state(self) -> TreeableType:
         pass
 
     @abstractmethod
@@ -53,7 +53,7 @@ class ClassObject(Object):
     def register_cas(self, cas: CAS) -> None:
         self._cas = cas
 
-    def get_state(self):
+    def get_state(self) -> TreeableType:
         return self._instance.__dict__
 
     def set_state(self, state_hash: Hash) -> None:
