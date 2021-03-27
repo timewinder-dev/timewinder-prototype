@@ -5,7 +5,6 @@ from .cas import CAS
 from .tree import non_flat_keys
 from .tree import Hash
 from .tree import hash_flat_tree
-from .tree import is_deep_type
 from timewinder.generators import NonDeterministicSet
 
 from typing import Dict
@@ -77,8 +76,6 @@ def flatten_to_cas(tree: Union[dict, list], cas: CAS) -> Iterable[Hash]:
     for state in itertools.product(*generators):
         # Fill in each key
         for k, v in zip(non_flats, state):
-            if is_deep_type(v):
-                raise TypeError("Generator produced unexpected type flattening to CAS")
             tree_copy[k] = v
         # Now, if all the resulting keys are flat, the recursive call
         # hits the base case. If any trees were generated, the recursive
